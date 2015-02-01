@@ -44,6 +44,9 @@ type DrawContext interface {
 
 	// SetStroke sets the color used by the stroke functions.
 	SetStroke(r, g, b, a float64)
+	
+	// SetThickness sets the thickness of the stroke.
+	SetThickness(thickness float64)
 
 	// Stroke path outlines the current path.
 	StrokePath()

@@ -287,6 +287,15 @@ func (c *canvas) SetStroke(r, g, b, a float64) {
 	// TODO: this
 }
 
+func (c *canvas) SetThickness(thickness float64) {
+	globalLock.Lock();
+	defer globalLock.Unlock();
+	if c.pointer == nil {
+		panic("Canvas is invaild.")
+	}
+	// TODO: this
+}
+
 func (c *canvas) StrokePath() {
 	globalLock.Lock();
 	defer globalLock.Unlock();

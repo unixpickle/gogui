@@ -10,7 +10,7 @@ func main() {
 }
 
 func openWindow() {
-	w, _ := gogui.NewWindow(gogui.Rect{100, 100, 400, 400})
+	w, _ := gogui.NewWindow(gogui.Rect{0, 0, 400, 400})
 	w.SetTitle("Demo")
 	w.Center()
 	w.Show()

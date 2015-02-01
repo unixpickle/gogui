@@ -1,5 +1,9 @@
+// package gogui provides a very simple library for creating user interfaces in
+// Go.
 package gogui
 
+// The AppInfo object represents information about the application which the
+// implementation may choose to display to the user in some form.
 type AppInfo struct {
 	Name string
 }
@@ -8,17 +12,15 @@ type AppInfo struct {
 type Canvas interface {
 	Widget
 
-	// DrawFunc returns the draw function for the canvas.
-	DrawFunc() DrawFunc
-
-	// NeedsDisplay requests that the canvas be updated.
-	NeedsDisplay()
-
-	// SetDrawFunc updates the draw function for the canvas.
-	SetDrawFunc(d DrawFunc)
+	// BeginDrawing starts a new drawing context for the canvas.
+	Begin() DrawContext
+	
+	// Flush draws everything from the current context to the screen
+	// asynchronously.
+	Flush()
 }
 
-// A DrawContext receives draw commands and performs them on a Canvas.
+// A DrawContext receives draw commands.
 type DrawContext interface {
 	// BeginPath starts a path which can be filled or stroked.
 	BeginPath()
@@ -51,9 +53,6 @@ type DrawContext interface {
 	// StrokeRect outlines a rectangle.
 	StrokeRect(r Rect)
 }
-
-// A DrawFunc is called on the GUI goroutine to draw into a Canvas.
-type DrawFunc func(DrawContext)
 
 // A Rect holds the position and dimensions for a Widget.
 //
@@ -111,7 +110,7 @@ type Window interface {
 	Hide()
 
 	// Parent returns nil; it exists to implement the Widget interface.
-	Parent()
+	Parent() Widget
 
 	// Remove does nothing; it exists to implement the Widget interface.
 	Remove()

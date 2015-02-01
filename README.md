@@ -4,9 +4,7 @@
 
 # TODO
 
- * Add drawing events to canvas queue
- * Flush events by applying them to the Objective-C canvas
- * Implement `drawRect:` in Objective-C
+ * Add drawing events to canvas to implement full interface
 
 # License
 

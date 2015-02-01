@@ -8,6 +8,7 @@ import (
 
 var unsupportedError = errors.New("OS not supported.")
 
+
 // NewCanvas creates a new canvas or fails with an error.
 // The returned canvas will not be added to any window and will have a nil draw
 // function by default.
@@ -26,4 +27,9 @@ func NewWindow(r Rect) (Window, error) {
 func Main(info *AppInfo) {
 	select {
 	}
+}
+
+// ShowingWindows returns all of the windows which are showing.
+func ShowingWindows() []Window {
+	return nil
 }

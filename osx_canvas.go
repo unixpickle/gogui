@@ -83,7 +83,10 @@ void RemoveCanvas(void * ptr) {
 */
 import "C"
 
-import "unsafe"
+import (
+	"runtime"
+	"unsafe"
+)
 
 type canvas struct {
 	parent  Widget
@@ -97,6 +100,7 @@ func NewCanvas(r Rect) (Canvas, error) {
 	ptr := C.CreateCanvas(C.double(r.X), C.double(r.Y), C.double(r.Width),
 		C.double(r.Height))
 	res := &canvas{nil, ptr}
+	runtime.SetFinalizer(res, finalizeCanvas)
 	return res, nil
 }
 
@@ -116,16 +120,6 @@ func (c *canvas) ClosePath() {
 		panic("Canvas is invaild.")
 	}
 	// TODO: this
-}
-
-func (c *canvas) Destroy() {
-	globalLock.Lock()
-	defer globalLock.Unlock()
-	if c.pointer == nil {
-		panic("Canvas is invalid.")
-	}
-	C.DestroyCanvas(c.pointer)
-	c.pointer = nil
 }
 
 func (c *canvas) FillPath() {
@@ -203,7 +197,9 @@ func (c *canvas) Remove() {
 		for i, x := range w.widgets {
 			if widget, ok := x.(*canvas); ok && widget == c {
 				w.widgets[i] = w.widgets[len(w.widgets) - 1]
+				w.widgets[len(w.widgets) - 1] = nil
 				w.widgets = w.widgets[0 : len(w.widgets)-1]
+				break
 			}
 		}
 	} else {
@@ -259,4 +255,18 @@ func (c *canvas) StrokeRect(r Rect) {
 		panic("Canvas is invaild.")
 	}
 	// TODO: this
+}
+
+func finalizeCanvas(c *canvas) {
+	globalLock.Lock()
+	defer globalLock.Unlock()
+	if c.pointer == nil {
+		panic("Canvas is invalid.")
+	}
+	
+	// I do not call c.Remove() here because the finalizer will only be called
+	// if nothing, including a superview, contains the Canvas.
+	
+	C.DestroyCanvas(c.pointer)
+	c.pointer = nil
 }

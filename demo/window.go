@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/unixpickle/gogui"
+	"os"
 )
 
 func main() {
@@ -14,4 +15,7 @@ func openWindow() {
 	w.SetTitle("Demo")
 	w.Center()
 	w.Show()
+	w.SetCloseHandler(func() {
+		os.Exit(0)
+	})
 }

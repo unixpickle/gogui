@@ -8,6 +8,36 @@ package gogui
 #import <Cocoa/Cocoa.h>
 
 void RunMain(void (^ block)(void));
+extern void windowOrderedOut(void * ptr);
+
+@interface SimpleWindow : NSWindow {
+}
+
+- (id)initWithFrame:(NSRect)rect;
+
+@end
+
+@implementation SimpleWindow
+
+- (id)initWithFrame:(NSRect)r {
+	self = [super initWithContentRect:r
+		styleMask:(NSTitledWindowMask|NSClosableWindowMask)
+		backing:NSBackingStoreBuffered
+		defer:NO];
+	if (self) {
+		[self setReleasedWhenClosed:NO];
+	}
+	return self;
+}
+
+- (void)orderOut:(id)sender {
+	[super orderOut:sender];
+	if (sender) {
+		windowOrderedOut((void *)self);
+	}
+}
+
+@end
 
 void AddToWindow(void * wind, void * view) {
 	NSWindow * w = (NSWindow *)wind;
@@ -29,11 +59,7 @@ void * CreateWindow(double x, double y, double w, double h) {
 		(CGFloat)h);
 	__block NSWindow * res = nil;
 	RunMain(^{
-		res = [[NSWindow alloc] initWithContentRect:r
-			styleMask:(NSTitledWindowMask|NSClosableWindowMask)
-			backing:NSBackingStoreBuffered
-			defer:NO];
-		[res setReleasedWhenClosed:NO];
+		res = [[SimpleWindow alloc] initWithFrame:r];
 	});
 	return (void *)res;
 }
@@ -95,11 +121,18 @@ void ShowWindow(void * ptr) {
 */
 import "C"
 
-import "unsafe"
+import (
+	"runtime"
+	"unsafe"
+)
+
+var showingWindows = []Window{}
 
 type window struct {
 	pointer unsafe.Pointer
 	widgets []Widget
+	showing bool
+	onClose func()
 }
 
 func NewWindow(r Rect) (Window, error) {
@@ -107,13 +140,18 @@ func NewWindow(r Rect) (Window, error) {
 	defer globalLock.Unlock()
 	ptr := C.CreateWindow(C.double(r.Y), C.double(r.Y), C.double(r.Width),
 		C.double(r.Height))
-	return &window{ptr, []Widget{}}, nil
+	res := &window{ptr, []Widget{}, false, nil}
+	runtime.SetFinalizer(res, finalizeWindow)
+	return res, nil
 }
 
 func (w *window) Add(widget Widget) {
 	globalLock.Lock()
 	defer globalLock.Unlock()
 	if canvas, ok := widget.(*canvas); ok {
+		if canvas.parent != nil {
+			panic("Widget already has a parent.")
+		}
 		canvas.parent = w
 		C.AddToWindow(w.pointer, canvas.pointer)
 	} else {
@@ -142,23 +180,13 @@ func (w *window) Children() []Widget {
 	return cpy
 }
 
-func (w *window) Destroy() {
+func (w *window) CloseHandler() func() {
 	globalLock.Lock()
 	defer globalLock.Unlock()
 	if w.pointer == nil {
 		panic("Window is invalid.")
 	}
-	
-	// Remove all children.
-	for len(w.widgets) > 0 {
-		w.widgets[0].Remove()
-	}
-	
-	// Destroy the window.
-	C.DestroyWindow(w.pointer)
-	
-	// Invalidate the object.
-	w.pointer = nil
+	return w.onClose
 }
 
 func (w *window) Focus() {
@@ -182,7 +210,18 @@ func (w *window) Hide() {
 	if w.pointer == nil {
 		panic("Window is invalid.")
 	}
-	C.HideWindow(w.pointer)
+	if w.showing {
+		w.showing = false
+		C.HideWindow(w.pointer)
+		for i, x := range showingWindows {
+			if x.(*window) == w {
+				showingWindows[i] = showingWindows[len(showingWindows) - 1]
+				showingWindows[len(showingWindows) - 1] = nil
+				showingWindows = showingWindows[0 : len(showingWindows)-1]
+				break
+			}
+		}
+	}
 }
 
 func (w *window) Parent() Widget {
@@ -200,6 +239,15 @@ func (w *window) Remove() {
 	if w.pointer == nil {
 		panic("Window is invalid.")
 	}
+}
+
+func (w *window) SetCloseHandler(f func()) {
+	globalLock.Lock()
+	defer globalLock.Unlock()
+	if w.pointer == nil {
+		panic("Window is invalid.")
+	}
+	w.onClose = f
 }
 
 func (w *window) SetFrame(r Rect) {
@@ -227,5 +275,28 @@ func (w *window) Show() {
 	if w.pointer == nil {
 		panic("Window is invalid.")
 	}
-	C.ShowWindow(w.pointer)
+	if !w.showing {
+		w.showing = true
+		C.ShowWindow(w.pointer)
+		showingWindows = append(showingWindows, w)
+	}
+}
+
+func finalizeWindow(w *window) {
+	globalLock.Lock()
+	defer globalLock.Unlock()
+	if w.pointer == nil {
+		panic("Window is invalid.")
+	}
+	
+	// Remove all children.
+	for len(w.widgets) > 0 {
+		w.widgets[0].Remove()
+	}
+	
+	// Destroy the window.
+	C.DestroyWindow(w.pointer)
+	
+	// Invalidate the object.
+	w.pointer = nil
 }

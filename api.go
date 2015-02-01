@@ -67,9 +67,6 @@ type Rect struct {
 
 // A Widget is any item that can be shown visually to the user.
 type Widget interface {
-	// Destroy invalidates the widget and frees its associated memory.
-	Destroy()
-
 	// Frame returns the bounding box for this widget.
 	Frame() Rect
 
@@ -94,9 +91,9 @@ type Window interface {
 
 	// Children returns every direct child of this window.
 	Children() []Widget
-
-	// Destroy invalidates the window, closes it, and removes all its children.
-	Destroy()
+	
+	// CloseHandler returns the window's close handler.
+	CloseHandler() func()
 
 	// Focus brings the window to the front if it is showing.
 	Focus()
@@ -112,6 +109,10 @@ type Window interface {
 
 	// Remove does nothing; it exists to implement the Widget interface.
 	Remove()
+
+	// SetCloseHandler sets a function to be called when the user closes the
+	// window.
+	SetCloseHandler(h func())
 
 	// SetFrame sets the content rectangle for the window.
 	SetFrame(r Rect)

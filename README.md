@@ -4,7 +4,9 @@
 
 # TODO
 
- * Use the garbage collector to cleanup Window and Canvas...
+ * Add drawing events to canvas queue
+ * Flush events by applying them to the Objective-C canvas
+ * Implement `drawRect:` in Objective-C
 
 # License
 

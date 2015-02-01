@@ -13,13 +13,45 @@ void RemoveView(void * ptr);
 void SetViewFrame(void * ptr, double x, double y, double w, double h);
 
 @interface Canvas : NSView {
+	int numCalls;
+	int * callNames;
+	double * callArgs;
 }
+
+- (void)applyCalls:(int)num names:(int *)names args:(double *)args;
+
 @end
 
 @implementation Canvas
 
+- (void)applyCalls:(int)num names:(int *)names args:(double *)args {
+	if (callNames) {
+		free(callNames);
+	}
+	if (callArgs) {
+		free(callArgs);
+	}
+	callNames = (int *)malloc(sizeof(int) * num);
+	callArgs = (double *)malloc(sizeof(double) * num);
+	memcpy(callNames, names, sizeof(int)*num);
+	memcpy(callArgs, args, sizeof(double)*num);
+}
+
+- (void)dealloc {
+	[super dealloc];
+	if (callNames) {
+		free(callNames);
+	}
+	if (callArgs) {
+		free(callArgs);
+	}
+}
+
 - (void)drawRect:(NSRect)dirtyRect {
-	// TODO: this
+	if (numCalls == 0) {
+		return;
+	}
+	// TODO: draw here.
 }
 
 @end
@@ -68,9 +100,22 @@ func NewCanvas(r Rect) (Canvas, error) {
 	return res, nil
 }
 
-func (c *canvas) Begin() DrawContext {
+func (c *canvas) BeginPath() {
+	globalLock.Lock();
+	defer globalLock.Unlock();
+	if c.pointer == nil {
+		panic("Canvas is invaild.")
+	}
 	// TODO: this
-	return nil
+}
+
+func (c *canvas) ClosePath() {
+	globalLock.Lock();
+	defer globalLock.Unlock();
+	if c.pointer == nil {
+		panic("Canvas is invaild.")
+	}
+	// TODO: this
 }
 
 func (c *canvas) Destroy() {
@@ -81,6 +126,24 @@ func (c *canvas) Destroy() {
 	}
 	C.DestroyCanvas(c.pointer)
 	c.pointer = nil
+}
+
+func (c *canvas) FillPath() {
+	globalLock.Lock();
+	defer globalLock.Unlock();
+	if c.pointer == nil {
+		panic("Canvas is invaild.")
+	}
+	// TODO: this
+}
+
+func (c *canvas) FillRect(r Rect) {
+	globalLock.Lock();
+	defer globalLock.Unlock();
+	if c.pointer == nil {
+		panic("Canvas is invaild.")
+	}
+	// TODO: this
 }
 
 func (c *canvas) Flush() {
@@ -96,6 +159,24 @@ func (c *canvas) Frame() Rect {
 	var x, y, w, h C.double
 	C.GetViewFrame(c.pointer, &x, &y, &w, &h)
 	return Rect{float64(x), float64(y), float64(w), float64(h)}
+}
+
+func (c *canvas) LineTo(x, y float64) {
+	globalLock.Lock();
+	defer globalLock.Unlock();
+	if c.pointer == nil {
+		panic("Canvas is invaild.")
+	}
+	// TODO: this
+}
+
+func (c *canvas) MoveTo(x, y float64) {
+	globalLock.Lock();
+	defer globalLock.Unlock();
+	if c.pointer == nil {
+		panic("Canvas is invaild.")
+	}
+	// TODO: this
 }
 
 func (c *canvas) Parent() Widget {
@@ -134,6 +215,15 @@ func (c *canvas) Remove() {
 	C.RemoveView(c.pointer)
 }
 
+func (c *canvas) SetFill(r, g, b, a float64) {
+	globalLock.Lock();
+	defer globalLock.Unlock();
+	if c.pointer == nil {
+		panic("Canvas is invaild.")
+	}
+	// TODO: this
+}
+
 func (c *canvas) SetFrame(r Rect) {
 	globalLock.Lock()
 	defer globalLock.Unlock()
@@ -142,4 +232,31 @@ func (c *canvas) SetFrame(r Rect) {
 	}
 	C.SetViewFrame(c.pointer, C.double(r.Y), C.double(r.Y), C.double(r.Width),
 		C.double(r.Height))
+}
+
+func (c *canvas) SetStroke(r, g, b, a float64) {
+	globalLock.Lock();
+	defer globalLock.Unlock();
+	if c.pointer == nil {
+		panic("Canvas is invaild.")
+	}
+	// TODO: this
+}
+
+func (c *canvas) StrokePath() {
+	globalLock.Lock();
+	defer globalLock.Unlock();
+	if c.pointer == nil {
+		panic("Canvas is invaild.")
+	}
+	// TODO: this
+}
+
+func (c *canvas) StrokeRect(r Rect) {
+	globalLock.Lock();
+	defer globalLock.Unlock();
+	if c.pointer == nil {
+		panic("Canvas is invaild.")
+	}
+	// TODO: this
 }

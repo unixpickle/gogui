@@ -11,9 +11,7 @@ type AppInfo struct {
 // A Canvas is a widget that can be drawn into.
 type Canvas interface {
 	Widget
-
-	// BeginDrawing starts a new drawing context for the canvas.
-	Begin() DrawContext
+	DrawContext
 	
 	// Flush draws everything from the current context to the screen
 	// asynchronously.

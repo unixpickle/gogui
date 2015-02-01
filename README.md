@@ -2,6 +2,10 @@
 
 **gogui** will be an easy-to-use library for creating simple GUIs in Go. I intend to implement it for Mac OS X and have no plans to support other operating systems, although such implementations would be very welcome.
 
+# TODO
+
+ * Use the garbage collector to cleanup Window and Canvas...
+
 # License
 
 **gogui** is licensed under the BSD 2-clause license. See [LICENSE](LICENSE).

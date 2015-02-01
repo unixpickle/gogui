@@ -1,5 +1,9 @@
 package gogui
 
+type AppInfo struct {
+	Name string
+}
+
 // A Canvas is a widget that can be drawn into.
 type Canvas interface {
 	Widget
@@ -114,6 +118,9 @@ type Window interface {
 
 	// SetFrame sets the content rectangle for the window.
 	SetFrame(r Rect)
+	
+	// SetTitle sets the title of the window.
+	SetTitle(t string)
 
 	// Show opens the window if it was not open before.
 	Show()

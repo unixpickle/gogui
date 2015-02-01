@@ -15,3 +15,9 @@ func NewCanvas(r Rect) (Canvas, error) {
 func NewWindow(r Rect) (Window, error) {
 	return nil, unsupportedError
 }
+
+// Main does nothing.
+func Main(info *AppInfo) {
+	select {
+	}
+}

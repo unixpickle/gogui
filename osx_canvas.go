@@ -12,6 +12,13 @@ void GetViewFrame(void * ptr, double * x, double * y, double * w, double * h);
 void RemoveView(void * ptr);
 void SetViewFrame(void * ptr, double x, double y, double w, double h);
 
+enum {
+	canvasCommandBeginPath = 0,
+	canvasCommandClosePath,
+	canvasCommandFillPath,
+	canvasCommandFillRect
+};
+
 @interface Canvas : NSView {
 	int numCalls;
 	int * callNames;
@@ -31,10 +38,12 @@ void SetViewFrame(void * ptr, double x, double y, double w, double h);
 	if (callArgs) {
 		free(callArgs);
 	}
+	numCalls = num;
 	callNames = (int *)malloc(sizeof(int) * num);
-	callArgs = (double *)malloc(sizeof(double) * num);
+	callArgs = (double *)malloc(sizeof(double) * num * 4);
 	memcpy(callNames, names, sizeof(int)*num);
-	memcpy(callArgs, args, sizeof(double)*num);
+	memcpy(callArgs, args, sizeof(double)*num*4);
+	[self setNeedsDisplay:YES];
 }
 
 - (void)dealloc {
@@ -51,10 +60,39 @@ void SetViewFrame(void * ptr, double x, double y, double w, double h);
 	if (numCalls == 0) {
 		return;
 	}
-	// TODO: draw here.
+	CGContextRef c = (CGContextRef)[[NSGraphicsContext currentContext]
+		graphicsPort];
+	for (int i = 0; i < numCalls; ++i) {
+		// Get the info for the call.
+		int command = callNames[i];
+		double * argsPtr = &callArgs[i * 4];
+		CGFloat args[4] = {(CGFloat)argsPtr[0], (CGFloat)argsPtr[1],
+			(CGFloat)argsPtr[2], (CGFloat)argsPtr[3]};
+
+		// TODO: add the rest of the commands
+		switch (command) {
+		case canvasCommandFillRect:
+			CGContextFillRect(c, CGRectMake(args[0], args[1], args[2],
+				args[3]));
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+- (BOOL)isFlipped {
+	return YES;
 }
 
 @end
+
+void ApplyCalls(void * ptr, int count, int * commands, double * args) {
+	Canvas * c = (Canvas *)ptr;
+	RunMain(^{
+		[c applyCalls:count names:commands args:args];
+	});
+}
 
 void * CreateCanvas(double x, double y, double w, double h) {
 	NSRect r = NSMakeRect((CGFloat)x, (CGFloat)y, (CGFloat)w,
@@ -90,8 +128,18 @@ import (
 
 type canvas struct {
 	parent  Widget
-	pointer unsafe.Pointer 
+	pointer unsafe.Pointer
+	
+	commands []C.int
+	args     []C.double
 }
+
+const (
+	canvasCommandBeginPath = iota
+	canvasCommandClosePath = iota
+	canvasCommandFillPath = iota
+	canvasCommandFillRect = iota
+)
 
 // NewCanvas creates a new canvas with the given frame.
 func NewCanvas(r Rect) (Canvas, error) {
@@ -99,7 +147,7 @@ func NewCanvas(r Rect) (Canvas, error) {
 	defer globalLock.Unlock()
 	ptr := C.CreateCanvas(C.double(r.X), C.double(r.Y), C.double(r.Width),
 		C.double(r.Height))
-	res := &canvas{nil, ptr}
+	res := &canvas{nil, ptr, []C.int{}, []C.double{}}
 	runtime.SetFinalizer(res, finalizeCanvas)
 	return res, nil
 }
@@ -110,7 +158,7 @@ func (c *canvas) BeginPath() {
 	if c.pointer == nil {
 		panic("Canvas is invaild.")
 	}
-	// TODO: this
+	c.addEmptyCommand(canvasCommandBeginPath)
 }
 
 func (c *canvas) ClosePath() {
@@ -119,7 +167,7 @@ func (c *canvas) ClosePath() {
 	if c.pointer == nil {
 		panic("Canvas is invaild.")
 	}
-	// TODO: this
+	c.addEmptyCommand(canvasCommandClosePath)
 }
 
 func (c *canvas) FillPath() {
@@ -128,7 +176,7 @@ func (c *canvas) FillPath() {
 	if c.pointer == nil {
 		panic("Canvas is invaild.")
 	}
-	// TODO: this
+	c.addEmptyCommand(canvasCommandFillPath)
 }
 
 func (c *canvas) FillRect(r Rect) {
@@ -137,11 +185,18 @@ func (c *canvas) FillRect(r Rect) {
 	if c.pointer == nil {
 		panic("Canvas is invaild.")
 	}
-	// TODO: this
+	c.addFullCommand(canvasCommandFillRect, r.X, r.Y, r.Width, r.Height)
 }
 
 func (c *canvas) Flush() {
-	// TODO: this
+	globalLock.Lock();
+	defer globalLock.Unlock();
+	if c.pointer == nil {
+		panic("Canvas is invaild.")
+	}
+	C.ApplyCalls(c.pointer, C.int(len(c.commands)), &c.commands[0], &c.args[0])
+	c.commands = []C.int{}
+	c.args = []C.double{}
 }
 
 func (c *canvas) Frame() Rect {
@@ -248,6 +303,15 @@ func (c *canvas) StrokeRect(r Rect) {
 		panic("Canvas is invaild.")
 	}
 	// TODO: this
+}
+
+func (c *canvas) addEmptyCommand(cmd int) {
+	c.addFullCommand(cmd, 0, 0, 0, 0)
+}
+
+func (c *canvas) addFullCommand(cmd int, w, x, y, z float64) {
+	c.commands = append(c.commands, C.int(cmd))
+	c.args = append(c.args, C.double(w), C.double(x), C.double(y), C.double(z))
 }
 
 func finalizeCanvas(c *canvas) {

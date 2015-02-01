@@ -10,6 +10,18 @@ package gogui
 void RunMain(void (^ block)(void));
 extern void windowOrderedOut(void * ptr);
 
+@interface ContentView : NSView {
+}
+@end
+
+@implementation ContentView
+
+- (BOOL)isFlipped {
+	return YES;
+}
+
+@end
+
 @interface SimpleWindow : NSWindow {
 }
 
@@ -25,7 +37,11 @@ extern void windowOrderedOut(void * ptr);
 		backing:NSBackingStoreBuffered
 		defer:NO];
 	if (self) {
+		ContentView * cv = [[ContentView alloc]
+			initWithFrame:NSMakeRect(0, 0, r.size.width, r.size.height)];
 		[self setReleasedWhenClosed:NO];
+		[self setContentView:cv];
+		[cv release];
 	}
 	return self;
 }

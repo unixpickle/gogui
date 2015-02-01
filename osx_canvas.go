@@ -194,14 +194,7 @@ func (c *canvas) Remove() {
 	
 	// Remove references to this widget from its parent.
 	if w, ok := c.parent.(*window); ok {
-		for i, x := range w.widgets {
-			if widget, ok := x.(*canvas); ok && widget == c {
-				w.widgets[i] = w.widgets[len(w.widgets) - 1]
-				w.widgets[len(w.widgets) - 1] = nil
-				w.widgets = w.widgets[0 : len(w.widgets)-1]
-				break
-			}
-		}
+		w.removeWidget(c)
 	} else {
 		panic("Unknown parent type.")
 	}

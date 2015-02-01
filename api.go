@@ -122,4 +122,7 @@ type Window interface {
 
 	// Show opens the window if it was not open before.
 	Show()
+	
+	// Showing returns whether the window is showing or not.
+	Showing() bool
 }

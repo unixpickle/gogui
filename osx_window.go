@@ -145,6 +145,14 @@ func NewWindow(r Rect) (Window, error) {
 	return res, nil
 }
 
+func ShowingWindows() []Window {
+	globalLock.Lock()
+	defer globalLock.Unlock()
+	res := make([]Window, len(showingWindows))
+	copy(res, showingWindows)
+	return res
+}
+
 func (w *window) Add(widget Widget) {
 	globalLock.Lock()
 	defer globalLock.Unlock()
@@ -279,6 +287,27 @@ func (w *window) Show() {
 		w.showing = true
 		C.ShowWindow(w.pointer)
 		showingWindows = append(showingWindows, w)
+	}
+}
+
+// Showing returns whether the window is showing or not.
+func (w *window) Showing() bool {
+	globalLock.Lock()
+	defer globalLock.Unlock()
+	if w.pointer == nil {
+		panic("Window is invalid.")
+	}
+	return w.showing
+}
+
+func (w *window) removeWidget(widget Widget) {
+	for i, x := range w.widgets {
+		if x == widget {
+			w.widgets[i] = w.widgets[len(w.widgets) - 1]
+			w.widgets[len(w.widgets) - 1] = nil
+			w.widgets = w.widgets[0 : len(w.widgets)-1]
+			break
+		}
 	}
 }
 

@@ -8,6 +8,26 @@ So far, gogui supports window creation and canvas drawing. Here is an example of
 
 ![](screenshots/canvas_demo.png)
 
+# TODO
+
+The following canvas features should be added:
+
+ * Arcs
+ * Ellipses
+ * Text
+ * Line cap
+ * Line join
+
+I plan to add the following events to a window:
+
+ * OnMouseDown
+ * OnMouseUp
+ * OnMouseDrag
+ * OnMouseMove
+ * OnKeyDown
+ * OnKeyPress
+ * OnKeyUp
+
 # License
 
 **gogui** is licensed under the BSD 2-clause license. See [LICENSE](LICENSE).

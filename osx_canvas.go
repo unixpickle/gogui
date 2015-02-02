@@ -15,6 +15,7 @@ void SetViewFrame(void * ptr, double x, double y, double w, double h);
 enum {
 	canvasCommandBeginPath = 0,
 	canvasCommandClosePath,
+	canvasCommandFillEllipse,
 	canvasCommandFillPath,
 	canvasCommandFillRect,
     canvasCommandLineTo,
@@ -22,6 +23,7 @@ enum {
     canvasCommandSetFill,
     canvasCommandSetStroke,
     canvasCommandSetThickness,
+	canvasCommandStrokeEllipse,
     canvasCommandStrokePath,
     canvasCommandStrokeRect
 };
@@ -85,6 +87,10 @@ enum {
 		case canvasCommandClosePath:
 			CGContextClosePath(c);
 			break;
+		case canvasCommandFillEllipse:
+			CGContextFillEllipseInRect(c, CGRectMake(args[0], args[1], args[2],
+				args[3]));
+			break;
 		case canvasCommandFillPath:
 			CGContextFillPath(c);
 			break;
@@ -106,6 +112,10 @@ enum {
 			break;
 		case canvasCommandSetThickness:
 			CGContextSetLineWidth(c, args[0]);
+			break;
+		case canvasCommandStrokeEllipse:
+			CGContextStrokeEllipseInRect(c, CGRectMake(args[0], args[1],
+				args[2], args[3]));
 			break;
 		case canvasCommandStrokePath:
 			CGContextStrokePath(c);
@@ -175,6 +185,7 @@ type canvas struct {
 const (
 	canvasCommandBeginPath = iota
 	canvasCommandClosePath = iota
+	canvasCommandFillEllipse = iota
 	canvasCommandFillPath = iota
 	canvasCommandFillRect = iota
 	canvasCommandLineTo = iota
@@ -182,6 +193,7 @@ const (
 	canvasCommandSetFill = iota
 	canvasCommandSetStroke = iota
 	canvasCommandSetThickness = iota
+	canvasCommandStrokeEllipse = iota
 	canvasCommandStrokePath = iota
 	canvasCommandStrokeRect = iota
 )
@@ -213,6 +225,15 @@ func (c *canvas) ClosePath() {
 		panic("Canvas is invaild.")
 	}
 	c.addEmptyCommand(canvasCommandClosePath)
+}
+
+func (c *canvas) FillEllipse(r Rect) {
+	globalLock.Lock();
+	defer globalLock.Unlock();
+	if c.pointer == nil {
+		panic("Canvas is invaild.")
+	}
+	c.addFullCommand(canvasCommandFillEllipse, r.X, r.Y, r.Width, r.Height)
 }
 
 func (c *canvas) FillPath() {
@@ -339,6 +360,15 @@ func (c *canvas) SetThickness(thickness float64) {
 		panic("Canvas is invaild.")
 	}
 	c.addFullCommand(canvasCommandSetThickness, thickness, 0, 0, 0)
+}
+
+func (c *canvas) StrokeEllipse(r Rect) {
+	globalLock.Lock();
+	defer globalLock.Unlock();
+	if c.pointer == nil {
+		panic("Canvas is invaild.")
+	}
+	c.addFullCommand(canvasCommandStrokeEllipse, r.X, r.Y, r.Width, r.Height)
 }
 
 func (c *canvas) StrokePath() {

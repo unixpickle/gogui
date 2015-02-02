@@ -13,7 +13,6 @@ So far, gogui supports window creation and canvas drawing. Here is an example of
 The following canvas features should be added:
 
  * Arcs
- * Ellipses
  * Text
  * Line cap
  * Line join

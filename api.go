@@ -27,6 +27,9 @@ type DrawContext interface {
 	// in it.
 	ClosePath()
 
+	// FillEllipse fills an ellipse inside a rectangle.
+	FillEllipse(r Rect)
+
 	// FillPath fills the current path as a polygon.
 	FillPath()
 
@@ -47,6 +50,9 @@ type DrawContext interface {
 	
 	// SetThickness sets the thickness of the stroke.
 	SetThickness(thickness float64)
+
+	// StrokeEllipse strokes an ellipse inside a rectangle.
+	StrokeEllipse(r Rect)
 
 	// Stroke path outlines the current path.
 	StrokePath()

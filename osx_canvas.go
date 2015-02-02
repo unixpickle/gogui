@@ -16,7 +16,14 @@ enum {
 	canvasCommandBeginPath = 0,
 	canvasCommandClosePath,
 	canvasCommandFillPath,
-	canvasCommandFillRect
+	canvasCommandFillRect,
+    canvasCommandLineTo,
+    canvasCommandMoveTo,
+    canvasCommandSetFill,
+    canvasCommandSetStroke,
+    canvasCommandSetThickness,
+    canvasCommandStrokePath,
+    canvasCommandStrokeRect
 };
 
 @interface Canvas : NSView {
@@ -62,6 +69,7 @@ enum {
 	}
 	CGContextRef c = (CGContextRef)[[NSGraphicsContext currentContext]
 		graphicsPort];
+	CGContextSetLineCap(c, kCGLineCapRound);
 	for (int i = 0; i < numCalls; ++i) {
 		// Get the info for the call.
 		int command = callNames[i];
@@ -71,8 +79,38 @@ enum {
 
 		// TODO: add the rest of the commands
 		switch (command) {
+		case canvasCommandBeginPath:
+			CGContextBeginPath(c);
+			break;
+		case canvasCommandClosePath:
+			CGContextClosePath(c);
+			break;
+		case canvasCommandFillPath:
+			CGContextFillPath(c);
+			break;
 		case canvasCommandFillRect:
 			CGContextFillRect(c, CGRectMake(args[0], args[1], args[2],
+				args[3]));
+			break;
+		case canvasCommandLineTo:
+			CGContextAddLineToPoint(c, args[0], args[1]);
+			break;
+		case canvasCommandMoveTo:
+			CGContextMoveToPoint(c, args[0], args[1]);
+			break;
+		case canvasCommandSetFill:
+			CGContextSetRGBFillColor(c, args[0], args[1], args[2], args[3]);
+			break;
+		case canvasCommandSetStroke:
+			CGContextSetRGBStrokeColor(c, args[0], args[1], args[2], args[3]);
+			break;
+		case canvasCommandSetThickness:
+			CGContextSetLineWidth(c, args[0]);
+			break;
+		case canvasCommandStrokePath:
+			CGContextStrokePath(c);
+		case canvasCommandStrokeRect:
+			CGContextStrokeRect(c, CGRectMake(args[0], args[1], args[2],
 				args[3]));
 			break;
 		default:
@@ -139,6 +177,13 @@ const (
 	canvasCommandClosePath = iota
 	canvasCommandFillPath = iota
 	canvasCommandFillRect = iota
+	canvasCommandLineTo = iota
+	canvasCommandMoveTo = iota
+	canvasCommandSetFill = iota
+	canvasCommandSetStroke = iota
+	canvasCommandSetThickness = iota
+	canvasCommandStrokePath = iota
+	canvasCommandStrokeRect = iota
 )
 
 // NewCanvas creates a new canvas with the given frame.
@@ -216,7 +261,7 @@ func (c *canvas) LineTo(x, y float64) {
 	if c.pointer == nil {
 		panic("Canvas is invaild.")
 	}
-	// TODO: this
+	c.addFullCommand(canvasCommandLineTo, x, y, 0, 0)
 }
 
 func (c *canvas) MoveTo(x, y float64) {
@@ -225,7 +270,7 @@ func (c *canvas) MoveTo(x, y float64) {
 	if c.pointer == nil {
 		panic("Canvas is invaild.")
 	}
-	// TODO: this
+	c.addFullCommand(canvasCommandMoveTo, x, y, 0, 0)
 }
 
 func (c *canvas) Parent() Widget {
@@ -265,7 +310,7 @@ func (c *canvas) SetFill(r, g, b, a float64) {
 	if c.pointer == nil {
 		panic("Canvas is invaild.")
 	}
-	// TODO: this
+	c.addFullCommand(canvasCommandSetFill, r, g, b, a)
 }
 
 func (c *canvas) SetFrame(r Rect) {
@@ -284,7 +329,7 @@ func (c *canvas) SetStroke(r, g, b, a float64) {
 	if c.pointer == nil {
 		panic("Canvas is invaild.")
 	}
-	// TODO: this
+	c.addFullCommand(canvasCommandSetStroke, r, g, b, a)
 }
 
 func (c *canvas) SetThickness(thickness float64) {
@@ -293,7 +338,7 @@ func (c *canvas) SetThickness(thickness float64) {
 	if c.pointer == nil {
 		panic("Canvas is invaild.")
 	}
-	// TODO: this
+	c.addFullCommand(canvasCommandSetThickness, thickness, 0, 0, 0)
 }
 
 func (c *canvas) StrokePath() {
@@ -302,7 +347,7 @@ func (c *canvas) StrokePath() {
 	if c.pointer == nil {
 		panic("Canvas is invaild.")
 	}
-	// TODO: this
+	c.addEmptyCommand(canvasCommandStrokePath)
 }
 
 func (c *canvas) StrokeRect(r Rect) {
@@ -311,7 +356,7 @@ func (c *canvas) StrokeRect(r Rect) {
 	if c.pointer == nil {
 		panic("Canvas is invaild.")
 	}
-	// TODO: this
+	c.addFullCommand(canvasCommandStrokeRect, r.X, r.Y, r.Width, r.Height)
 }
 
 func (c *canvas) addEmptyCommand(cmd int) {

@@ -1,10 +1,12 @@
 # gogui
 
-**gogui** will be an easy-to-use library for creating simple GUIs in Go. I intend to implement it for Mac OS X and have no plans to support other operating systems, although such implementations would be very welcome.
+**gogui** is an easy-to-use library for creating simple GUIs in Go. I intend to implement it for Mac OS X and have no plans to support other operating systems, although such implementations would be very welcome.
 
-# TODO
+# Screenshots
 
- * Add drawing events to canvas to implement full interface
+So far, gogui supports window creation and canvas drawing. Here is an example of what you can create (although the possibilities are *endless*):
+
+![](screenshots/canvas_demo.png)
 
 # License
 

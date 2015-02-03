@@ -61,6 +61,15 @@ type DrawContext interface {
 	StrokeRect(r Rect)
 }
 
+// A MouseEvent holds information for a mouse event.
+type MouseEvent struct {
+	X float64
+	Y float64
+}
+
+// A MouseHandler handles mouse events.
+type MouseHandler func(MouseEvent)
+
 // A Rect holds the position and dimensions for a Widget.
 //
 // The X value starts from the left of the parent. The Y value starts from the
@@ -113,6 +122,9 @@ type Window interface {
 	// Hide closes the window if it was open.
 	Hide()
 
+	// MouseDownHandler returns the window's mouse-down handler.
+	MouseDownHandler() MouseHandler
+
 	// Parent returns nil; it exists to implement the Widget interface.
 	Parent() Widget
 
@@ -125,6 +137,9 @@ type Window interface {
 
 	// SetFrame sets the content rectangle for the window.
 	SetFrame(r Rect)
+	
+	// SetMouseDownHandler sets the window's mouse-down handler.
+	SetMouseDownHandler(m MouseHandler)
 	
 	// SetTitle sets the title of the window.
 	SetTitle(t string)

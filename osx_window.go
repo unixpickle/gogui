@@ -9,6 +9,7 @@ package gogui
 
 void RunMain(void (^ block)(void));
 extern void windowOrderedOut(void * ptr);
+extern void windowMouseDown(void * ptr, double x, double y);
 
 @interface ContentView : NSView {
 }
@@ -44,6 +45,12 @@ extern void windowOrderedOut(void * ptr);
 		[cv release];
 	}
 	return self;
+}
+
+- (void)mouseDown:(NSEvent *)evt {
+	NSPoint p = [evt locationInWindow];
+	p.y = [self.contentView frame].size.height - p.y;
+	windowMouseDown((void *)self, (double)p.x, (double)p.y);
 }
 
 - (void)orderOut:(id)sender {
@@ -148,7 +155,9 @@ type window struct {
 	pointer unsafe.Pointer
 	widgets []Widget
 	showing bool
-	onClose func()
+	
+	onClose     func()
+	onMouseDown MouseHandler
 }
 
 func NewWindow(r Rect) (Window, error) {
@@ -156,7 +165,7 @@ func NewWindow(r Rect) (Window, error) {
 	defer globalLock.Unlock()
 	ptr := C.CreateWindow(C.double(r.Y), C.double(r.Y), C.double(r.Width),
 		C.double(r.Height))
-	res := &window{ptr, []Widget{}, false, nil}
+	res := &window{pointer: ptr, widgets: []Widget{}}
 	runtime.SetFinalizer(res, finalizeWindow)
 	return res, nil
 }
@@ -248,6 +257,15 @@ func (w *window) Hide() {
 	}
 }
 
+func (w *window) MouseDownHandler() MouseHandler {
+	globalLock.Lock()
+	defer globalLock.Unlock()
+	if w.pointer == nil {
+		panic("Window is invalid.")
+	}
+	return w.onMouseDown
+}
+
 func (w *window) Parent() Widget {
 	globalLock.Lock()
 	defer globalLock.Unlock()
@@ -282,6 +300,15 @@ func (w *window) SetFrame(r Rect) {
 	}
 	C.SetWindowFrame(w.pointer, C.double(r.X), C.double(r.Y),
 		C.double(r.Width), C.double(r.Height))
+}
+
+func (w *window) SetMouseDownHandler(f MouseHandler) {
+	globalLock.Lock()
+	defer globalLock.Unlock()
+	if w.pointer == nil {
+		panic("Window is invalid.")
+	}
+	w.onMouseDown = f
 }
 
 func (w *window) SetTitle(title string) {

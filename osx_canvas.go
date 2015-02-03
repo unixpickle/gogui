@@ -72,6 +72,7 @@ enum {
 	CGContextRef c = (CGContextRef)[[NSGraphicsContext currentContext]
 		graphicsPort];
 	CGContextSetLineCap(c, kCGLineCapRound);
+	CGContextSetLineJoin(c, kCGLineJoinRound);
 	for (int i = 0; i < numCalls; ++i) {
 		// Get the info for the call.
 		int command = callNames[i];

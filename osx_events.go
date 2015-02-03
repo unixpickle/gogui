@@ -4,14 +4,44 @@ package gogui
 
 import (
 	"C"
+	"sync"
 	"unsafe"
 )
 
+type eventLoop struct {
+	lock    sync.Mutex
+	waiting []func()
+	trigger chan struct{}
+}
+
+var mainEventLoop = eventLoop{sync.Mutex{}, []func(){}, make(chan struct{})}
+
+func (e *eventLoop) main() {
+	for {
+		<-e.trigger
+		e.lock.Lock()
+		waiting := e.waiting
+		e.waiting = []func(){}
+		e.lock.Unlock()
+		for _, evt := range waiting {
+			evt()
+		}
+	}
+}
+
+func (e *eventLoop) push(evt func()) {
+	e.lock.Lock()
+	e.waiting = append(e.waiting, evt)
+	e.lock.Unlock()
+	select {
+	case e.trigger <- struct{}{}:
+	default:
+	}
+}
+
 //export windowOrderedOut
 func windowOrderedOut(ptr unsafe.Pointer) {
-	// Don't block the UI thread. This will not result in a race condition
-	// because the Show() method won't do anything unless w.showing is false.
-	go func() {
+	mainEventLoop.push(func() {
 		globalLock.Lock()
 		defer globalLock.Unlock()
 		for i, x := range showingWindows {
@@ -32,5 +62,5 @@ func windowOrderedOut(ptr unsafe.Pointer) {
 				break
 			}
 		}
-	}()
+	})
 }

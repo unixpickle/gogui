@@ -84,6 +84,7 @@ var globalLock sync.Mutex
 func init() {
 	// Make sure main.main runs on the main OS thread.
 	runtime.LockOSThread()
+	go mainEventLoop.main()
 }
 
 // Main runs the Cocoa runloop. You must call this from main.main.

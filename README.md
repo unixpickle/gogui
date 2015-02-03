@@ -19,9 +19,6 @@ The following canvas features should be added:
 
 I plan to add the following events to a window:
 
- * OnMouseUp
- * OnMouseDrag
- * OnMouseMove
  * OnKeyDown
  * OnKeyPress
  * OnKeyUp

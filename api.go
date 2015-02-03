@@ -124,6 +124,15 @@ type Window interface {
 
 	// MouseDownHandler returns the window's mouse-down handler.
 	MouseDownHandler() MouseHandler
+	
+	// MouseDragHandler returns the window's mouse-drag handler.
+	MouseDragHandler() MouseHandler
+	
+	// MouseMoveHandler returns the window's mouse-move handler.
+	MouseMoveHandler() MouseHandler
+	
+	// MouseUpHandler returns the window's mouse-up handler.
+	MouseUpHandler() MouseHandler
 
 	// Parent returns nil; it exists to implement the Widget interface.
 	Parent() Widget
@@ -140,6 +149,15 @@ type Window interface {
 	
 	// SetMouseDownHandler sets the window's mouse-down handler.
 	SetMouseDownHandler(m MouseHandler)
+	
+	// SetMouseDragHandler sets the window's mouse-drag handler.
+	SetMouseDragHandler(m MouseHandler)
+	
+	// SetMouseMoveHandler sets the window's mouse-move handler.
+	SetMouseMoveHandler(m MouseHandler)
+	
+	// SetMouseUpHandler sets the window's mouse-up handler.
+	SetMouseUpHandler(m MouseHandler)
 	
 	// SetTitle sets the title of the window.
 	SetTitle(t string)

@@ -65,6 +65,48 @@ func windowMouseDown(ptr unsafe.Pointer, x, y C.double) {
 	})
 }
 
+//export windowMouseDrag
+func windowMouseDrag(ptr unsafe.Pointer, x, y C.double) {
+	mainEventLoop.push(func() {
+		window := findWindow(ptr)
+		if window == nil {
+			return
+		}
+		if handler := window.MouseDragHandler(); handler != nil {
+			evt := MouseEvent{float64(x), float64(y)}
+			handler(evt)
+		}
+	})
+}
+
+//export windowMouseMove
+func windowMouseMove(ptr unsafe.Pointer, x, y C.double) {
+	mainEventLoop.push(func() {
+		window := findWindow(ptr)
+		if window == nil {
+			return
+		}
+		if handler := window.MouseMoveHandler(); handler != nil {
+			evt := MouseEvent{float64(x), float64(y)}
+			handler(evt)
+		}
+	})
+}
+
+//export windowMouseUp
+func windowMouseUp(ptr unsafe.Pointer, x, y C.double) {
+	mainEventLoop.push(func() {
+		window := findWindow(ptr)
+		if window == nil {
+			return
+		}
+		if handler := window.MouseUpHandler(); handler != nil {
+			evt := MouseEvent{float64(x), float64(y)}
+			handler(evt)
+		}
+	})
+}
+
 //export windowOrderedOut
 func windowOrderedOut(ptr unsafe.Pointer) {
 	mainEventLoop.push(func() {

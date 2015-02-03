@@ -10,6 +10,9 @@ package gogui
 void RunMain(void (^ block)(void));
 extern void windowOrderedOut(void * ptr);
 extern void windowMouseDown(void * ptr, double x, double y);
+extern void windowMouseDrag(void * ptr, double x, double y);
+extern void windowMouseMove(void * ptr, double x, double y);
+extern void windowMouseUp(void * ptr, double x, double y);
 
 @interface ContentView : NSView {
 }
@@ -51,6 +54,24 @@ extern void windowMouseDown(void * ptr, double x, double y);
 	NSPoint p = [evt locationInWindow];
 	p.y = [self.contentView frame].size.height - p.y;
 	windowMouseDown((void *)self, (double)p.x, (double)p.y);
+}
+
+- (void)mouseDragged:(NSEvent *)evt {
+	NSPoint p = [evt locationInWindow];
+	p.y = [self.contentView frame].size.height - p.y;
+	windowMouseDrag((void *)self, (double)p.x, (double)p.y);
+}
+
+- (void)mouseMoved:(NSEvent *)evt {
+	NSPoint p = [evt locationInWindow];
+	p.y = [self.contentView frame].size.height - p.y;
+	windowMouseMove((void *)self, (double)p.x, (double)p.y);
+}
+
+- (void)mouseUp:(NSEvent *)evt {
+	NSPoint p = [evt locationInWindow];
+	p.y = [self.contentView frame].size.height - p.y;
+	windowMouseUp((void *)self, (double)p.x, (double)p.y);
 }
 
 - (void)orderOut:(id)sender {
@@ -127,6 +148,14 @@ void SetWindowFrame(void * ptr, double x, double y, double w, double h) {
 	});
 }
 
+void SetWindowMouseMove(void * ptr, int flag) {
+	NSWindow * w = (NSWindow *)ptr;
+	BOOL b = (flag != 0);
+	RunMain(^{
+		[w setAcceptsMouseMovedEvents:b];
+	});
+}
+
 void SetWindowTitle(void * ptr, const char * title) {
 	NSWindow * w = (NSWindow *)ptr;
 	RunMain(^{
@@ -158,6 +187,9 @@ type window struct {
 	
 	onClose     func()
 	onMouseDown MouseHandler
+	onMouseDrag MouseHandler
+	onMouseMove MouseHandler
+	onMouseUp   MouseHandler
 }
 
 func NewWindow(r Rect) (Window, error) {
@@ -266,6 +298,33 @@ func (w *window) MouseDownHandler() MouseHandler {
 	return w.onMouseDown
 }
 
+func (w *window) MouseDragHandler() MouseHandler {
+	globalLock.Lock()
+	defer globalLock.Unlock()
+	if w.pointer == nil {
+		panic("Window is invalid.")
+	}
+	return w.onMouseDrag
+}
+
+func (w *window) MouseMoveHandler() MouseHandler {
+	globalLock.Lock()
+	defer globalLock.Unlock()
+	if w.pointer == nil {
+		panic("Window is invalid.")
+	}
+	return w.onMouseMove
+}
+
+func (w *window) MouseUpHandler() MouseHandler {
+	globalLock.Lock()
+	defer globalLock.Unlock()
+	if w.pointer == nil {
+		panic("Window is invalid.")
+	}
+	return w.onMouseUp
+}
+
 func (w *window) Parent() Widget {
 	globalLock.Lock()
 	defer globalLock.Unlock()
@@ -309,6 +368,41 @@ func (w *window) SetMouseDownHandler(f MouseHandler) {
 		panic("Window is invalid.")
 	}
 	w.onMouseDown = f
+}
+
+func (w *window) SetMouseDragHandler(f MouseHandler) {
+	globalLock.Lock()
+	defer globalLock.Unlock()
+	if w.pointer == nil {
+		panic("Window is invalid.")
+	}
+	w.onMouseDrag = f
+}
+
+func (w *window) SetMouseMoveHandler(f MouseHandler) {
+	globalLock.Lock()
+	defer globalLock.Unlock()
+	if w.pointer == nil {
+		panic("Window is invalid.")
+	}
+	w.onMouseMove = f
+	
+	// If nothing is listening to mouse moved events, we shouldn't waste CPU
+	// handling them since they're so plentiful.
+	if f != nil {
+		C.SetWindowMouseMove(w.pointer, C.int(1))
+	} else {
+		C.SetWindowMouseMove(w.pointer, C.int(0))
+	}
+}
+
+func (w *window) SetMouseUpHandler(f MouseHandler) {
+	globalLock.Lock()
+	defer globalLock.Unlock()
+	if w.pointer == nil {
+		panic("Window is invalid.")
+	}
+	w.onMouseUp = f
 }
 
 func (w *window) SetTitle(title string) {

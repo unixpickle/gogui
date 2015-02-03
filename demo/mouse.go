@@ -22,4 +22,13 @@ func openWindow() {
 	w.SetMouseDownHandler(func(evt gogui.MouseEvent) {
 		fmt.Println("Got mouse down", evt)
 	})
+	w.SetMouseDragHandler(func(evt gogui.MouseEvent) {
+		fmt.Println("Got mouse drag", evt)
+	})
+	w.SetMouseMoveHandler(func(evt gogui.MouseEvent) {
+		fmt.Println("Got mouse move", evt)
+	})
+	w.SetMouseUpHandler(func(evt gogui.MouseEvent) {
+		fmt.Println("Got mouse up", evt)
+	})
 }

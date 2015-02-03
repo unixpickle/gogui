@@ -120,6 +120,7 @@ enum {
 			break;
 		case canvasCommandStrokePath:
 			CGContextStrokePath(c);
+			break;
 		case canvasCommandStrokeRect:
 			CGContextStrokeRect(c, CGRectMake(args[0], args[1], args[2],
 				args[3]));

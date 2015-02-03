@@ -52,7 +52,7 @@ func drawLines(c gogui.Canvas, evts []gogui.MouseEvent) {
 	// Stroke the path
 	if len(evts) > 1 {
 		c.SetStroke(1, 0, 0, 1)
-		c.SetThickness(10)
+		c.SetThickness(8)
 		c.BeginPath()
 		c.MoveTo(evts[0].X, evts[0].Y)
 		for i := 1; i < len(evts); i++ {
@@ -63,7 +63,7 @@ func drawLines(c gogui.Canvas, evts []gogui.MouseEvent) {
 	
 	// Fill the last point
 	evt := evts[len(evts) - 1]
-	c.SetFill(0, 1, 0, 1)
+	c.SetFill(0.82, 0.29, 0.29, 1)
 	c.FillEllipse(gogui.Rect{evt.X - 5, evt.Y - 5, 10, 10})
 	
 	c.Flush()

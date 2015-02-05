@@ -51,44 +51,59 @@ func findWindow(ptr unsafe.Pointer) *window {
 	return nil
 }
 
+func makeKeyEvent(charCode, keyCode, flags C.int) KeyEvent {
+	res := KeyEvent{CharCode: int(charCode), KeyCode: int(keyCode)}
+	f := int(flags)
+	if (f & 1) != 0 {
+		res.AltKey = true
+	}
+	if (f & 2) != 0 {
+		res.CtrlKey = true
+	}
+	if (f & 4) != 0 {
+		res.MetaKey = true
+	}
+	if (f & 8) != 0 {
+		res.ShiftKey = true
+	}
+	return res
+}
+
 //export windowKeyDown
-func windowKeyDown(ptr unsafe.Pointer, charCode, keyCode C.int) {
+func windowKeyDown(ptr unsafe.Pointer, charCode, keyCode, flags C.int) {
 	mainEventLoop.push(func() {
 		window := findWindow(ptr)
 		if window == nil {
 			return
 		}
 		if handler := window.KeyDownHandler(); handler != nil {
-			evt := KeyEvent{int(charCode), int(keyCode)}
-			handler(evt)
+			handler(makeKeyEvent(charCode, keyCode, flags))
 		}
 	})
 }
 
 //export windowKeyPress
-func windowKeyPress(ptr unsafe.Pointer, charCode, keyCode C.int) {
+func windowKeyPress(ptr unsafe.Pointer, charCode, keyCode, flags C.int) {
 	mainEventLoop.push(func() {
 		window := findWindow(ptr)
 		if window == nil {
 			return
 		}
 		if handler := window.KeyPressHandler(); handler != nil {
-			evt := KeyEvent{int(charCode), int(keyCode)}
-			handler(evt)
+			handler(makeKeyEvent(charCode, keyCode, flags))
 		}
 	})
 }
 
 //export windowKeyUp
-func windowKeyUp(ptr unsafe.Pointer, charCode, keyCode C.int) {
+func windowKeyUp(ptr unsafe.Pointer, charCode, keyCode, flags C.int) {
 	mainEventLoop.push(func() {
 		window := findWindow(ptr)
 		if window == nil {
 			return
 		}
 		if handler := window.KeyUpHandler(); handler != nil {
-			evt := KeyEvent{int(charCode), int(keyCode)}
-			handler(evt)
+			handler(makeKeyEvent(charCode, keyCode, flags))
 		}
 	})
 }

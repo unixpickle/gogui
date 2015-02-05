@@ -8,9 +8,9 @@ package gogui
 #import <Cocoa/Cocoa.h>
 
 void RunMain(void (^ block)(void));
-extern void windowKeyDown(void * ptr, int charCode, int keyCode);
-extern void windowKeyPress(void * ptr, int charCode, int keyCode);
-extern void windowKeyUp(void * ptr, int charCode, int keyCode);
+extern void windowKeyDown(void * ptr, int charCode, int keyCode, int flags);
+extern void windowKeyPress(void * ptr, int charCode, int keyCode, int flags);
+extern void windowKeyUp(void * ptr, int charCode, int keyCode, int flags);
 extern void windowMouseDown(void * ptr, double x, double y);
 extern void windowMouseDrag(void * ptr, double x, double y);
 extern void windowMouseMove(void * ptr, double x, double y);
@@ -37,6 +37,24 @@ static int eventCharCode(NSEvent * e, BOOL press) {
 	return (int)[s characterAtIndex:0];
 }
 
+static int generateFlags() {
+	int res = 0;
+	NSEventModifierFlags f = [NSEvent modifierFlags];
+	if (f & NSAlternateKeyMask) {
+		res |= 1;
+	}
+	if (f & NSControlKeyMask) {
+		res |= 2;
+	}
+	if (f & NSCommandKeyMask) {
+		res |= 4;
+	}
+	if (f & NSShiftKeyMask) {
+		res |= 8;
+	}
+	return res;
+}
+
 @interface ContentView : NSView {
 }
 @end
@@ -50,6 +68,7 @@ static int eventCharCode(NSEvent * e, BOOL press) {
 @end
 
 @interface SimpleWindow : NSWindow {
+	NSEventModifierFlags flags;
 }
 
 - (id)initWithFrame:(NSRect)rect;
@@ -73,16 +92,50 @@ static int eventCharCode(NSEvent * e, BOOL press) {
 	return self;
 }
 
-// TODO: modifier key events here.
+- (void)flagsChanged:(NSEvent *)evt {
+	NSEventModifierFlags f = evt.modifierFlags;
+	NSEventModifierFlags changed = f ^ flags;
+	if (changed & NSShiftKeyMask) {
+		if (f & NSShiftKeyMask) {
+			windowKeyDown((void *)self, 0x10, -1, generateFlags());
+		} else {
+			windowKeyUp((void *)self, 0x10, -1, generateFlags());
+		}
+	}
+	if (changed & NSAlternateKeyMask) {
+		if (f & NSAlternateKeyMask) {
+			windowKeyDown((void *)self, 18, -1, generateFlags());
+		} else {
+			windowKeyUp((void *)self, 18, -1, generateFlags());
+		}
+	}
+	if (changed & NSCommandKeyMask) {
+		if (f & NSCommandKeyMask) {
+			windowKeyDown((void *)self, 91, -1, generateFlags());
+		} else {
+			windowKeyUp((void *)self, 91, -1, generateFlags());
+		}
+	}
+	if (changed & NSControlKeyMask) {
+		if (f & NSControlKeyMask) {
+			windowKeyDown((void *)self, 17, -1, generateFlags());
+		} else {
+			windowKeyUp((void *)self, 17, -1, generateFlags());
+		}
+	}
+	flags = f;
+}
 
 - (void)keyDown:(NSEvent *)evt {
-	windowKeyDown((void *)self, eventCharCode(evt, NO), (int)[evt keyCode]);
-	windowKeyPress((void *)self, eventCharCode(evt, YES), (int)[evt keyCode]);
+	windowKeyDown((void *)self, eventCharCode(evt, NO), (int)[evt keyCode],
+		generateFlags());
+	windowKeyPress((void *)self, eventCharCode(evt, YES), (int)[evt keyCode],
+		generateFlags());
 }
 
 - (void)keyUp:(NSEvent *)evt {
-	int code = eventCharCode(evt, NO);
-	windowKeyUp((void *)self, code, (int)[evt keyCode]);
+	windowKeyUp((void *)self, eventCharCode(evt, NO), (int)[evt keyCode],
+		generateFlags());
 }
 
 - (void)mouseDown:(NSEvent *)evt {

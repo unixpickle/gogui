@@ -68,6 +68,11 @@ type KeyEvent struct {
 	
 	// KeyCode stores the OS-specific key code (if available).
 	KeyCode  int
+	
+	AltKey   bool
+	CtrlKey  bool
+	MetaKey  bool
+	ShiftKey bool
 }
 
 // A KeyHandler handles keyboard events.

@@ -17,10 +17,6 @@ The following canvas features should be added:
  * Line cap
  * Line join
 
-For keyboard events:
-
- * Support key events for modifier keys on OS X
-
 # License
 
 **gogui** is licensed under the BSD 2-clause license. See [LICENSE](LICENSE).

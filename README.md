@@ -17,11 +17,9 @@ The following canvas features should be added:
  * Line cap
  * Line join
 
-I plan to add the following events to a window:
+For keyboard events:
 
- * OnKeyDown
- * OnKeyPress
- * OnKeyUp
+ * Support key events for modifier keys on OS X
 
 # License
 

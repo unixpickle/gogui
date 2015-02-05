@@ -8,11 +8,34 @@ package gogui
 #import <Cocoa/Cocoa.h>
 
 void RunMain(void (^ block)(void));
-extern void windowOrderedOut(void * ptr);
+extern void windowKeyDown(void * ptr, int charCode, int keyCode);
+extern void windowKeyPress(void * ptr, int charCode, int keyCode);
+extern void windowKeyUp(void * ptr, int charCode, int keyCode);
 extern void windowMouseDown(void * ptr, double x, double y);
 extern void windowMouseDrag(void * ptr, double x, double y);
 extern void windowMouseMove(void * ptr, double x, double y);
 extern void windowMouseUp(void * ptr, double x, double y);
+extern void windowOrderedOut(void * ptr);
+
+static int eventCharCode(NSEvent * e, BOOL press) {
+	NSString * s;
+	if (press) {
+		s = e.characters;
+		// Set the case (because it's not set for us)
+		if ([NSEvent modifierFlags] & NSShiftKeyMask) {
+			s = [s uppercaseString];
+		}
+	} else {
+		s = e.charactersIgnoringModifiers;
+		// JavaScript char codes are always uppercase by default, but NSEvents
+		// are lowercase.
+		s = [s uppercaseString];
+	}
+	if (s.length == 0) {
+		return 0;
+	}
+	return (int)[s characterAtIndex:0];
+}
 
 @interface ContentView : NSView {
 }
@@ -48,6 +71,18 @@ extern void windowMouseUp(void * ptr, double x, double y);
 		[cv release];
 	}
 	return self;
+}
+
+// TODO: modifier key events here.
+
+- (void)keyDown:(NSEvent *)evt {
+	windowKeyDown((void *)self, eventCharCode(evt, NO), (int)[evt keyCode]);
+	windowKeyPress((void *)self, eventCharCode(evt, YES), (int)[evt keyCode]);
+}
+
+- (void)keyUp:(NSEvent *)evt {
+	int code = eventCharCode(evt, NO);
+	windowKeyUp((void *)self, code, (int)[evt keyCode]);
 }
 
 - (void)mouseDown:(NSEvent *)evt {
@@ -186,6 +221,9 @@ type window struct {
 	showing bool
 	
 	onClose     func()
+	onKeyDown   KeyHandler
+	onKeyPress  KeyHandler
+	onKeyUp     KeyHandler
 	onMouseDown MouseHandler
 	onMouseDrag MouseHandler
 	onMouseMove MouseHandler
@@ -289,6 +327,33 @@ func (w *window) Hide() {
 	}
 }
 
+func (w *window) KeyDownHandler() KeyHandler {
+	globalLock.Lock()
+	defer globalLock.Unlock()
+	if w.pointer == nil {
+		panic("Window is invalid.")
+	}
+	return w.onKeyDown
+}
+
+func (w *window) KeyPressHandler() KeyHandler {
+	globalLock.Lock()
+	defer globalLock.Unlock()
+	if w.pointer == nil {
+		panic("Window is invalid.")
+	}
+	return w.onKeyPress
+}
+
+func (w *window) KeyUpHandler() KeyHandler {
+	globalLock.Lock()
+	defer globalLock.Unlock()
+	if w.pointer == nil {
+		panic("Window is invalid.")
+	}
+	return w.onKeyUp
+}
+
 func (w *window) MouseDownHandler() MouseHandler {
 	globalLock.Lock()
 	defer globalLock.Unlock()
@@ -359,6 +424,33 @@ func (w *window) SetFrame(r Rect) {
 	}
 	C.SetWindowFrame(w.pointer, C.double(r.X), C.double(r.Y),
 		C.double(r.Width), C.double(r.Height))
+}
+
+func (w *window) SetKeyDownHandler(f KeyHandler) {
+	globalLock.Lock()
+	defer globalLock.Unlock()
+	if w.pointer == nil {
+		panic("Window is invalid.")
+	}
+	w.onKeyDown = f
+}
+
+func (w *window) SetKeyPressHandler(f KeyHandler) {
+	globalLock.Lock()
+	defer globalLock.Unlock()
+	if w.pointer == nil {
+		panic("Window is invalid.")
+	}
+	w.onKeyPress = f
+}
+
+func (w *window) SetKeyUpHandler(f KeyHandler) {
+	globalLock.Lock()
+	defer globalLock.Unlock()
+	if w.pointer == nil {
+		panic("Window is invalid.")
+	}
+	w.onKeyUp = f
 }
 
 func (w *window) SetMouseDownHandler(f MouseHandler) {

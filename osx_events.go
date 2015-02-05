@@ -51,6 +51,48 @@ func findWindow(ptr unsafe.Pointer) *window {
 	return nil
 }
 
+//export windowKeyDown
+func windowKeyDown(ptr unsafe.Pointer, charCode, keyCode C.int) {
+	mainEventLoop.push(func() {
+		window := findWindow(ptr)
+		if window == nil {
+			return
+		}
+		if handler := window.KeyDownHandler(); handler != nil {
+			evt := KeyEvent{int(charCode), int(keyCode)}
+			handler(evt)
+		}
+	})
+}
+
+//export windowKeyPress
+func windowKeyPress(ptr unsafe.Pointer, charCode, keyCode C.int) {
+	mainEventLoop.push(func() {
+		window := findWindow(ptr)
+		if window == nil {
+			return
+		}
+		if handler := window.KeyPressHandler(); handler != nil {
+			evt := KeyEvent{int(charCode), int(keyCode)}
+			handler(evt)
+		}
+	})
+}
+
+//export windowKeyUp
+func windowKeyUp(ptr unsafe.Pointer, charCode, keyCode C.int) {
+	mainEventLoop.push(func() {
+		window := findWindow(ptr)
+		if window == nil {
+			return
+		}
+		if handler := window.KeyUpHandler(); handler != nil {
+			evt := KeyEvent{int(charCode), int(keyCode)}
+			handler(evt)
+		}
+	})
+}
+
 //export windowMouseDown
 func windowMouseDown(ptr unsafe.Pointer, x, y C.double) {
 	mainEventLoop.push(func() {

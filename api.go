@@ -61,6 +61,18 @@ type DrawContext interface {
 	StrokeRect(r Rect)
 }
 
+// A KeyEvent holds information for a key event.
+type KeyEvent struct {
+	// CharCode stores a char code similar to the char codes in JavaScript.
+	CharCode int
+	
+	// KeyCode stores the OS-specific key code (if available).
+	KeyCode  int
+}
+
+// A KeyHandler handles keyboard events.
+type KeyHandler func(KeyEvent)
+
 // A MouseEvent holds information for a mouse event.
 type MouseEvent struct {
 	X float64
@@ -121,6 +133,15 @@ type Window interface {
 
 	// Hide closes the window if it was open.
 	Hide()
+	
+	// KeyDownHandler returns the window's key-down handler.
+	KeyDownHandler() KeyHandler
+	
+	// KeyPressHandler returns the window's key-press handler.
+	KeyPressHandler() KeyHandler
+	
+	// KeyUpHandler returns the window's key-Up handler.
+	KeyUpHandler() KeyHandler
 
 	// MouseDownHandler returns the window's mouse-down handler.
 	MouseDownHandler() MouseHandler
@@ -146,6 +167,15 @@ type Window interface {
 
 	// SetFrame sets the content rectangle for the window.
 	SetFrame(r Rect)
+	
+	// SetKeyDownHandler sets the window's key-down handler.
+	SetKeyDownHandler(k KeyHandler)
+	
+	// SetKeyPressHandler sets the window's key-press handler.
+	SetKeyPressHandler(k KeyHandler)
+	
+	// SetKeyUpHandler sets the window's key-up handler.
+	SetKeyUpHandler(k KeyHandler)
 	
 	// SetMouseDownHandler sets the window's mouse-down handler.
 	SetMouseDownHandler(m MouseHandler)

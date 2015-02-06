@@ -18,6 +18,20 @@ extern void windowMouseUp(void * ptr, double x, double y);
 extern void windowOrderedOut(void * ptr);
 
 static int eventCharCode(NSEvent * e, BOOL press) {
+	// This mapping maps Cocoa keyCodes directly to JavaScript key codes.
+	NSDictionary * mapping = @{
+		@(51): @(8), // backspace
+		@(123): @(37), // left arrow
+		@(126): @(38), // up arrow
+		@(124): @(39), // right arrow
+		@(125): @(40), // down arrow
+		@(117): @(46) // delete
+	};
+	if (mapping[@(e.keyCode)]) {
+		return [mapping[@(e.keyCode)] intValue];
+	}
+
+	// Use the event's characters to generate a JavaScript key code.
 	NSString * s;
 	if (press) {
 		s = e.characters;

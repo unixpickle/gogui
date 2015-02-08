@@ -139,6 +139,7 @@ static int generateFlags() {
 }
 
 - (void)orderOut:(id)sender {
+	[super orderOut:sender];
 	if (sender) {
 		windowClosed((void *)self);
 	}

@@ -5,16 +5,18 @@ import (
 )
 
 func main() {
-	openWindow()
-	gogui.Main(&gogui.AppInfo{Name: "Demo"})
-}
-
-func openWindow() {
-	w, _ := gogui.NewWindow(gogui.Rect{0, 0, 400, 400})
-	w.Center()
-	w.SetTitle("Demo")
-	w.Show()
-	w.SetCloseHandler(func() {
+	
+	// Open the evil window once the loop starts.
+	gogui.RunOnMain(func() {
+		w, _ := gogui.NewWindow(gogui.Rect{0, 0, 400, 400})
+		w.Center()
+		w.SetTitle("Evil")
 		w.Show()
+		w.SetCloseHandler(func() {
+			w.Show()
+		})
 	})
+	
+	// Run the loop.
+	gogui.Main(&gogui.AppInfo{Name: "Evil"})
 }

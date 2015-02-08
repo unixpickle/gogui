@@ -1,5 +1,7 @@
 package main
 
+// TODO: I gotta rewrite this entire thing...
+
 import (
 	"github.com/unixpickle/gogui"
 	"os"

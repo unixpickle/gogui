@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	go openWindow()
+	gogui.RunOnMain(openWindow)
 	gogui.Main(&gogui.AppInfo{Name: "Demo"})
 }
 

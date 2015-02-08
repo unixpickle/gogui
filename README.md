@@ -2,15 +2,48 @@
 
 **gogui** is an easy-to-use library for creating simple GUIs in Go. I intend to implement it for Mac OS X and have no plans to support other operating systems, although such implementations would be very welcome.
 
+# Usage
+
+gogui uses a simple runloop architecture. The runloop needs to run on the main OS thread, so you must call it directly from your main function:
+
+    package main
+    
+    import "github.com/unixpickle/gogui"
+    
+    func main() {
+        // some of your setup code here...
+        gogui.Main(&gogui.AppInfo{Name: "Demo"})
+    }
+
+All GUI events and modifications must occur on the main goroutine. This can be achieved through the `RunOnMain` function, which runs a function asynchronously on the main goroutine:
+
+    gogui.RunOnMain(func() {
+        // Modify the GUI here...
+    })
+
+You may call `RunOnMain` before running `gogui.Main()`, so it is perfectly valid to do something like this:
+
+    package main
+    
+    import "github.com/unixpickle/gogui"
+    
+    func main() {
+        gogui.RunOnMain(func() {
+    		w, _ := gogui.NewWindow(gogui.Rect{0, 0, 400, 400})
+    		w.Show()
+        })
+        gogui.Main(&gogui.AppInfo{Name: "Demo"})
+    }
+
+Further demonstrations can be found in the [demo](demo) folder. And, as always, the [GoDoc](http://godoc.org/github.com/unixpickle/gogui) gives a full overview of the package.
+
 # Screenshots
 
-So far, gogui supports window creation and canvas drawing. Here is an example of what you can create (although the possibilities are *endless*):
+So far, gogui supports keyboard and mouse events, window management, and canvas drawing. Here is an example of what you can create with a simple canvas:
 
 ![](screenshots/canvas_demo.png)
 
 # TODO
-
-
 
  * Use window's content frame instead of full frame.
  * Map keyboard events to match JavaScript keycodes.

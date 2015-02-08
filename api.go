@@ -1,4 +1,4 @@
-// package gogui provides a very simple library for creating user interfaces in
+// Package gogui provides a very simple library for creating user interfaces in
 // Go.
 package gogui
 

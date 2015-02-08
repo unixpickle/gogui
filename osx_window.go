@@ -10,7 +10,15 @@ package gogui
 #define ASSERT_MAIN NSCAssert([NSThread isMainThread], \
 	@"Call must be from main thread.")
 
+enum {
+	mouseEventDown = 0,
+	mouseEventDrag,
+	mouseEventMove,
+	mouseEventUp
+};
+
 extern void windowClosed(void * ptr);
+extern void windowMouseEvent(void * ptr, int type, double x, double y);
 
 @interface ContentView : NSView {
 }
@@ -41,6 +49,7 @@ extern void windowClosed(void * ptr);
 		backing:NSBackingStoreBuffered
 		defer:NO];
 	if (self) {
+		[self setAcceptsMouseMovedEvents:YES];
 		ContentView * cv = [[ContentView alloc]
 			initWithFrame:NSMakeRect(0, 0, r.size.width, r.size.height)];
 		[self setReleasedWhenClosed:NO];
@@ -48,6 +57,30 @@ extern void windowClosed(void * ptr);
 		[cv release];
 	}
 	return self;
+}
+
+- (void)mouseDown:(NSEvent *)evt {
+	NSPoint p = [evt locationInWindow];
+	p.y = [self.contentView frame].size.height - p.y;
+	windowMouseEvent((void *)self, mouseEventDown, (double)p.x, (double)p.y);
+}
+
+- (void)mouseDragged:(NSEvent *)evt {
+	NSPoint p = [evt locationInWindow];
+	p.y = [self.contentView frame].size.height - p.y;
+	windowMouseEvent((void *)self, mouseEventDrag, (double)p.x, (double)p.y);
+}
+
+- (void)mouseMoved:(NSEvent *)evt {
+	NSPoint p = [evt locationInWindow];
+	p.y = [self.contentView frame].size.height - p.y;
+	windowMouseEvent((void *)self, mouseEventMove, (double)p.x, (double)p.y);
+}
+
+- (void)mouseUp:(NSEvent *)evt {
+	NSPoint p = [evt locationInWindow];
+	p.y = [self.contentView frame].size.height - p.y;
+	windowMouseEvent((void *)self, mouseEventUp, (double)p.x, (double)p.y);
 }
 
 - (void)orderOut:(id)sender {

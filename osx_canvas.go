@@ -16,8 +16,11 @@ extern void canvasDrawRect(void * window, void * canvas, void * ctx);
 @implementation Canvas
 
 - (void)drawRect:(NSRect)ignored {
-	canvasDrawRect((void *)self.window, (void *)self,
-		[[NSGraphicsContext currentContext] graphicsPort]);
+	CGContextRef c = (CGContextRef)[[NSGraphicsContext currentContext]
+		graphicsPort];
+	CGContextSetLineCap(c, kCGLineCapRound);
+	CGContextSetLineJoin(c, kCGLineJoinRound);
+	canvasDrawRect((void *)self.window, (void *)self, (void *)c);
 }
 
 - (BOOL)isFlipped {

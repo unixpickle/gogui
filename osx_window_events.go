@@ -7,6 +7,13 @@ import (
 	"unsafe"
 )
 
+const (
+	mouseEventDown = iota
+	mouseEventDrag = iota
+	mouseEventMove = iota
+	mouseEventUp   = iota
+)
+
 //export windowClosed
 func windowClosed(ptr unsafe.Pointer) {
 	for i, w := range showingWindows {
@@ -22,6 +29,35 @@ func windowClosed(ptr unsafe.Pointer) {
 			if h := w.CloseHandler(); h != nil {
 				h()
 			}
+		}
+	}
+}
+
+//export windowMouseEvent
+func windowMouseEvent(ptr unsafe.Pointer, eventType int, x, y C.double) {
+	for _, w := range showingWindows {
+		wptr := w.(*window)
+		if wptr.pointer == ptr {
+			// Get the handler.
+			var handler MouseHandler
+			switch eventType {
+			case mouseEventDown:
+				handler = w.MouseDownHandler()
+			case mouseEventDrag:
+				handler = w.MouseDragHandler()
+			case mouseEventMove:
+				handler = w.MouseMoveHandler()
+			case mouseEventUp:
+				handler = w.MouseUpHandler()
+			default:
+				panic("Unknown mouse event.")
+			}
+			
+			// Call the handler if there is one.
+			if handler == nil {
+				return
+			}
+			handler(MouseEvent{float64(x), float64(y)})
 		}
 	}
 }

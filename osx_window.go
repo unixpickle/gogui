@@ -87,21 +87,30 @@ void GetWindowFrame(void * ptr, double * x, double * y, double * w,
 }
 
 void HideWindow(void * ptr) {
+	ASSERT_MAIN;
 	NSWindow * w = (NSWindow *)ptr;
 	[(NSWindow *)w orderOut:nil];
 }
 
+void RemoveFromSuperview(void * v) {
+	ASSERT_MAIN;
+	[(NSView *)v removeFromSuperview];
+}
+
 void SetWindowFrame(void * ptr, double x, double y, double w, double h) {
+	ASSERT_MAIN;
 	NSRect r = NSMakeRect((CGFloat)x, (CGFloat)y, (CGFloat)w,
 		(CGFloat)h);
 	[(NSWindow *)ptr setFrame:r display:YES];
 }
 
 void SetWindowTitle(void * w, const char * title) {
+	ASSERT_MAIN;
 	[(NSWindow *)w setTitle:[NSString stringWithUTF8String:title]];
 }
 
 void ShowWindow(void * w) {
+	ASSERT_MAIN;
 	[(NSWindow *)w makeKeyAndOrderFront:nil];
 	[NSApp activateIgnoringOtherApps:YES];
 }
@@ -117,7 +126,7 @@ import (
 var showingWindows = []Window{}
 
 type window struct {
-	*windowEvents
+	windowEvents
 
 	pointer unsafe.Pointer
 	widgets []Widget
@@ -148,6 +157,7 @@ func (w *window) Add(widget Widget) {
 	if !ok {
 		panic("Widget is not ptrView")
 	}
+	v.setParent(w)
 	ptr := v.viewPointer()
 	C.AddToWindow(w.pointer, ptr)
 }
@@ -220,12 +230,9 @@ func (w *window) Showing() bool {
 	return w.showing
 }
 
-func (w *window) removeWidget(widget Widget) {
-	v, ok := widget.(ptrView)
-	if !ok {
-		panic("Removed widget is not ptrView.")
-	}
+func (w *window) removeView(v ptrView) {
 	ptr := v.viewPointer()
+	C.RemoveFromSuperview(ptr)
 
 	// Find the first widget with the same underlying pointer.
 	for i, x := range w.widgets {
@@ -247,6 +254,5 @@ func finalizeWindow(w *window) {
 			w.widgets[0].Remove()
 		}
 		C.DestroyWindow(w.pointer)
-		w.pointer = nil
 	})
 }

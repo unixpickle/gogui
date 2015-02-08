@@ -6,10 +6,6 @@ import (
 	"unsafe"
 )
 
-type ptrView interface {
-	viewPointer() unsafe.Pointer
-}
-
 type keyEvents struct {
 	down  KeyHandler
 	press KeyHandler
@@ -77,6 +73,16 @@ func (m *mouseEvents) SetMouseMoveHandler(h MouseHandler) {
 
 func (m *mouseEvents) SetMouseUpHandler(h MouseHandler) {
 	m.up = h
+}
+
+type parentRemover interface {
+	Widget
+	removeView(v ptrView)
+}
+
+type ptrView interface {
+	viewPointer() unsafe.Pointer
+	setParent(p parentRemover)
 }
 
 type windowEvents struct {

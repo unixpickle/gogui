@@ -10,6 +10,8 @@ package gogui
 #define ASSERT_MAIN NSCAssert([NSThread isMainThread], \
 	@"Call must be from main thread.")
 
+extern void windowClosed(void * ptr);
+
 @interface ContentView : NSView {
 }
 
@@ -46,6 +48,12 @@ package gogui
 		[cv release];
 	}
 	return self;
+}
+
+- (void)orderOut:(id)sender {
+	if (sender) {
+		windowClosed((void *)self);
+	}
 }
 
 @end

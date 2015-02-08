@@ -119,7 +119,8 @@ func (c *canvas) viewPointer() unsafe.Pointer {
 }
 
 func finalizeCanvas(c *canvas) {
-	// I do not call c.Remove() here because the finalizer will only be called
-	// if nothing, including a superview, references the Canvas.
-	C.DestroyCanvas(c.pointer)
+	RunOnMain(func() {
+		c.Remove()
+		C.DestroyCanvas(c.pointer)
+	})
 }

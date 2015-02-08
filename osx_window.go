@@ -11,6 +11,18 @@ package gogui
 	@"Call must be from main thread.")
 
 enum {
+	keyEventDown = 0,
+	keyEventUp
+};
+
+enum {
+	keyFlagAlt   = 1,
+	keyFlagCtrl  = 2,
+	keyFlagMeta  = 4,
+	keyFlagShift = 8
+};
+
+enum {
 	mouseEventDown = 0,
 	mouseEventDrag,
 	mouseEventMove,
@@ -18,7 +30,28 @@ enum {
 };
 
 extern void windowClosed(void * ptr);
+extern void windowKeyFlagsChanged(void * ptr, int flags);
+extern void windowKeyEvent(void * ptr, int type, const char * chars,
+	const char * modChars, int keyCode, int modifiers);
 extern void windowMouseEvent(void * ptr, int type, double x, double y);
+
+static int generateFlags() {
+	int res = 0;
+	NSEventModifierFlags f = [NSEvent modifierFlags];
+	if (f & NSAlternateKeyMask) {
+		res |= keyFlagAlt;
+	}
+	if (f & NSControlKeyMask) {
+		res |= keyFlagCtrl;
+	}
+	if (f & NSCommandKeyMask) {
+		res |= keyFlagMeta;
+	}
+	if (f & NSShiftKeyMask) {
+		res |= keyFlagShift;
+	}
+	return res;
+}
 
 @interface ContentView : NSView {
 }
@@ -43,6 +76,10 @@ extern void windowMouseEvent(void * ptr, int type, double x, double y);
 
 @implementation SimpleWindow
 
+- (void)flagsChanged:(NSEvent *)evt {
+	windowKeyFlagsChanged((void *)self, generateFlags());
+}
+
 - (id)initWithFrame:(NSRect)r {
 	self = [super initWithContentRect:r
 		styleMask:(NSTitledWindowMask|NSClosableWindowMask)
@@ -57,6 +94,24 @@ extern void windowMouseEvent(void * ptr, int type, double x, double y);
 		[cv release];
 	}
 	return self;
+}
+
+- (void)keyDown:(NSEvent *)e {
+	const char * chars = e.charactersIgnoringModifiers.UTF8String;
+	const char * modChars = e.characters.UTF8String;
+	int modifiers = generateFlags();
+	int keyCode = (int)e.keyCode;
+	windowKeyEvent((void *)self, keyEventDown, chars, modChars, keyCode,
+		modifiers);
+}
+
+- (void)keyUp:(NSEvent *)e {
+	const char * chars = e.charactersIgnoringModifiers.UTF8String;
+	const char * modChars = e.characters.UTF8String;
+	int modifiers = generateFlags();
+	int keyCode = (int)e.keyCode;
+	windowKeyEvent((void *)self, keyEventUp, chars, modChars, keyCode,
+		modifiers);
 }
 
 - (void)mouseDown:(NSEvent *)evt {
@@ -145,9 +200,10 @@ void SetWindowFrame(void * ptr, double x, double y, double w, double h) {
 	[(NSWindow *)ptr setFrame:r display:YES];
 }
 
-void SetWindowTitle(void * w, const char * title) {
+void SetWindowTitle(void * w, char * title) {
 	ASSERT_MAIN;
 	[(NSWindow *)w setTitle:[NSString stringWithUTF8String:title]];
+	free((void *)title);
 }
 
 void ShowWindow(void * w) {
@@ -168,10 +224,11 @@ var showingWindows = []Window{}
 
 type window struct {
 	windowEvents
-
-	pointer unsafe.Pointer
-	widgets []Widget
-	showing bool
+	
+	modifiers int
+	pointer   unsafe.Pointer
+	showing   bool
+	widgets   []Widget
 }
 
 // NewWindow creates a new window with a given content rectangle.

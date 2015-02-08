@@ -13,6 +13,7 @@ type Canvas interface {
 	Widget
 
 	DrawHandler() DrawHandler
+	NeedsUpdate()
 	SetDrawHandler(d DrawHandler)
 }
 

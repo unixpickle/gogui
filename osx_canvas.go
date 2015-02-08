@@ -17,6 +17,11 @@ package gogui
 #define ASSERT_MAIN NSCAssert([NSThread isMainThread], \
 	@"Call must be from main thread.")
 
+void CanvasNeedsUpdate(void * v) {
+	ASSERT_MAIN;
+	[(NSView *)v setNeedsDisplay:YES];
+}
+
 void * CreateCanvas(double x, double y, double w, double h) {
 	ASSERT_MAIN;
 	NSRect r = NSMakeRect((CGFloat)x, (CGFloat)y, (CGFloat)w,
@@ -78,6 +83,10 @@ func (c *canvas) Frame() Rect {
 	var x, y, w, h C.double
 	C.GetViewFrame(c.pointer, &x, &y, &w, &h)
 	return Rect{float64(x), float64(y), float64(w), float64(h)}
+}
+
+func (c *canvas) NeedsUpdate() {
+	C.CanvasNeedsUpdate(c.pointer)
 }
 
 func (c *canvas) Parent() Widget {

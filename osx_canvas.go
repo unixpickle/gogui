@@ -20,6 +20,10 @@ extern void canvasDrawRect(void * window, void * canvas, void * ctx);
 		[[NSGraphicsContext currentContext] graphicsPort]);
 }
 
+- (BOOL)isFlipped {
+	return YES;
+}
+
 @end
 
 #define ASSERT_MAIN NSCAssert([NSThread isMainThread], \
@@ -30,8 +34,61 @@ void CanvasNeedsUpdate(void * v) {
 	[(NSView *)v setNeedsDisplay:YES];
 }
 
+void ContextBeginPath(void * c) {
+	CGContextBeginPath((CGContextRef)c);
+}
+
+void ContextClosePath(void * c) {
+	CGContextClosePath((CGContextRef)c);
+}
+
+void ContextFillEllipse(void * c, double x, double y, double w, double h) {
+	CGContextFillEllipseInRect((CGContextRef)c, CGRectMake((CGFloat)x,
+		(CGFloat)y, (CGFloat)w, (CGFloat)h));
+}
+
+void ContextFillPath(void * c) {
+	CGContextFillPath((CGContextRef)c);
+}
+
 void ContextFillRect(void * c, double x, double y, double w, double h) {
 	CGContextFillRect((CGContextRef)c, CGRectMake((CGFloat)x, (CGFloat)y,
+		(CGFloat)w, (CGFloat)h));
+}
+
+void ContextLineTo(void * c, double x, double y) {
+	CGContextAddLineToPoint((CGContextRef)c, (CGFloat)x, (CGFloat)y);
+}
+
+void ContextMoveTo(void * c, double x, double y) {
+	CGContextMoveToPoint((CGContextRef)c, (CGFloat)x, (CGFloat)y);
+}
+
+void ContextSetFill(void * c, double r, double g, double b, double a) {
+	CGContextSetRGBFillColor((CGContextRef)c, (CGFloat)r, (CGFloat)g,
+		(CGFloat)b, (CGFloat)a);
+}
+
+void ContextSetStroke(void * c, double r, double g, double b, double a) {
+	CGContextSetRGBStrokeColor((CGContextRef)c, (CGFloat)r, (CGFloat)g,
+		(CGFloat)b, (CGFloat)a);
+}
+
+void ContextSetThickness(void * c, double thickness) {
+	CGContextSetLineWidth((CGContextRef)c, (CGFloat)thickness);
+}
+
+void ContextStrokeEllipse(void * c, double x, double y, double w, double h) {
+	CGContextStrokeEllipseInRect((CGContextRef)c, CGRectMake((CGFloat)x,
+		(CGFloat)y, (CGFloat)w, (CGFloat)h));
+}
+
+void ContextStrokePath(void * c) {
+	CGContextStrokePath((CGContextRef)c);
+}
+
+void ContextStrokeRect(void * c, double x, double y, double w, double h) {
+	CGContextStrokeRect((CGContextRef)c, CGRectMake((CGFloat)x, (CGFloat)y,
 		(CGFloat)w, (CGFloat)h));
 }
 
@@ -143,19 +200,20 @@ type drawContext struct {
 }
 
 func (d *drawContext) BeginPath() {
-	panic("NYI")
+	C.ContextBeginPath(d.pointer)
 }
 
 func (d *drawContext) ClosePath() {
-	panic("NYI")
+	C.ContextClosePath(d.pointer)
 }
 
 func (d *drawContext) FillEllipse(r Rect) {
-	panic("NYI")
+	C.ContextFillEllipse(d.pointer, C.double(r.X), C.double(r.Y),
+		C.double(r.Width), C.double(r.Height))
 }
 
 func (d *drawContext) FillPath() {
-	panic("NYI")
+	C.ContextFillPath(d.pointer)
 }
 
 func (d *drawContext) FillRect(r Rect) {
@@ -164,33 +222,37 @@ func (d *drawContext) FillRect(r Rect) {
 }
 
 func (d *drawContext) LineTo(x, y float64) {
-	panic("NYI")
+	C.ContextLineTo(d.pointer, C.double(x), C.double(y))
 }
 
 func (d *drawContext) MoveTo(x, y float64) {
-	panic("NYI")
+	C.ContextMoveTo(d.pointer, C.double(x), C.double(y))
 }
 
 func (d *drawContext) SetFill(r, g, b, a float64) {
-	panic("NYI")
+	C.ContextSetFill(d.pointer, C.double(r), C.double(g), C.double(b),
+		C.double(a))
 }
 
 func (d *drawContext) SetStroke(r, g, b, a float64) {
-	panic("NYI")
+	C.ContextSetStroke(d.pointer, C.double(r), C.double(g), C.double(b),
+		C.double(a))
 }
 
 func (d *drawContext) SetThickness(thickness float64) {
-	panic("NYI")
+	C.ContextSetThickness(d.pointer, C.double(thickness))
 }
 
 func (d *drawContext) StrokeEllipse(r Rect) {
-	panic("NYI")
+	C.ContextStrokeEllipse(d.pointer, C.double(r.X), C.double(r.Y),
+		C.double(r.Width), C.double(r.Height))
 }
 
 func (d *drawContext) StrokePath() {
-	panic("NYI")
+	C.ContextStrokePath(d.pointer)
 }
 
 func (d *drawContext) StrokeRect(r Rect) {
-	panic("NYI")
+	C.ContextStrokeRect(d.pointer, C.double(r.X), C.double(r.Y),
+		C.double(r.Width), C.double(r.Height))
 }

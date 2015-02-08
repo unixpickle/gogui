@@ -2,7 +2,6 @@
 
 package gogui
 
-import "fmt"
 import (
 	"C"
 	"unsafe"

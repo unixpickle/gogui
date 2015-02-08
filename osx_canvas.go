@@ -7,11 +7,19 @@ package gogui
 #cgo LDFLAGS: -framework Cocoa
 #import <Cocoa/Cocoa.h>
 
+extern void canvasDrawRect(void * window, void * canvas, void * ctx);
+
 @interface Canvas : NSView {
 }
 @end
 
 @implementation Canvas
+
+- (void)drawRect:(NSRect)ignored {
+	canvasDrawRect((void *)self.window, (void *)self,
+		[[NSGraphicsContext currentContext] graphicsPort]);
+}
+
 @end
 
 #define ASSERT_MAIN NSCAssert([NSThread isMainThread], \
@@ -20,6 +28,11 @@ package gogui
 void CanvasNeedsUpdate(void * v) {
 	ASSERT_MAIN;
 	[(NSView *)v setNeedsDisplay:YES];
+}
+
+void ContextFillRect(void * c, double x, double y, double w, double h) {
+	CGContextFillRect((CGContextRef)c, CGRectMake((CGFloat)x, (CGFloat)y,
+		(CGFloat)w, (CGFloat)h));
 }
 
 void * CreateCanvas(double x, double y, double w, double h) {
@@ -123,4 +136,61 @@ func finalizeCanvas(c *canvas) {
 		c.Remove()
 		C.DestroyCanvas(c.pointer)
 	})
+}
+
+type drawContext struct {
+	pointer unsafe.Pointer
+}
+
+func (d *drawContext) BeginPath() {
+	panic("NYI")
+}
+
+func (d *drawContext) ClosePath() {
+	panic("NYI")
+}
+
+func (d *drawContext) FillEllipse(r Rect) {
+	panic("NYI")
+}
+
+func (d *drawContext) FillPath() {
+	panic("NYI")
+}
+
+func (d *drawContext) FillRect(r Rect) {
+	C.ContextFillRect(d.pointer, C.double(r.X), C.double(r.Y),
+		C.double(r.Width), C.double(r.Height))
+}
+
+func (d *drawContext) LineTo(x, y float64) {
+	panic("NYI")
+}
+
+func (d *drawContext) MoveTo(x, y float64) {
+	panic("NYI")
+}
+
+func (d *drawContext) SetFill(r, g, b, a float64) {
+	panic("NYI")
+}
+
+func (d *drawContext) SetStroke(r, g, b, a float64) {
+	panic("NYI")
+}
+
+func (d *drawContext) SetThickness(thickness float64) {
+	panic("NYI")
+}
+
+func (d *drawContext) StrokeEllipse(r Rect) {
+	panic("NYI")
+}
+
+func (d *drawContext) StrokePath() {
+	panic("NYI")
+}
+
+func (d *drawContext) StrokeRect(r Rect) {
+	panic("NYI")
 }

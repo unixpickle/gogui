@@ -165,6 +165,7 @@ func (w *window) Add(widget Widget) {
 	if !ok {
 		panic("Widget is not ptrView")
 	}
+	w.widgets = append(w.widgets, widget)
 	v.setParent(w)
 	ptr := v.viewPointer()
 	C.AddToWindow(w.pointer, ptr)

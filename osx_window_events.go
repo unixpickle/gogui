@@ -17,7 +17,7 @@ func windowClosed(ptr unsafe.Pointer) {
 			showingWindows[i] = showingWindows[len(showingWindows)-1]
 			showingWindows[len(showingWindows)-1] = nil
 			showingWindows = showingWindows[0 : len(showingWindows)-1]
-			
+
 			// Call the close handler
 			if h := w.CloseHandler(); h != nil {
 				h()

@@ -80,6 +80,15 @@ static int generateFlags() {
 	windowKeyFlagsChanged((void *)self, generateFlags());
 }
 
+- (NSRect)flippedContentRect {
+	NSRect frame = self.frame;
+	NSRect contentRect = [self contentRectForFrameRect:frame];
+	NSRect screenFrame = [self screen].frame;
+	contentRect.origin.y = screenFrame.size.height -
+		(contentRect.origin.y+contentRect.size.height);
+	return contentRect;
+}
+
 - (id)initWithFrame:(NSRect)r {
 	self = [super initWithContentRect:r
 		styleMask:(NSTitledWindowMask|NSClosableWindowMask)
@@ -145,6 +154,12 @@ static int generateFlags() {
 	}
 }
 
+- (void)setFlippedContentRect:(NSRect)r {
+	NSRect screenFrame = [self screen].frame;
+	r.origin.y = screenFrame.size.height - (r.origin.y+r.size.height);
+	[self setFrame:[self frameRectForContentRect:r] display:YES];
+}
+
 @end
 
 void AddToWindow(void * w, void * v) {
@@ -176,7 +191,7 @@ void DestroyWindow(void * ptr) {
 void GetWindowFrame(void * ptr, double * x, double * y, double * w,
 	double * h) {
 	ASSERT_MAIN;
-	NSRect r = [(NSWindow *)ptr frame];
+	NSRect r = [(SimpleWindow *)ptr flippedContentRect];
 	*x = (double)r.origin.x;
 	*y = (double)r.origin.y;
 	*w = (double)r.size.width;
@@ -198,7 +213,7 @@ void SetWindowFrame(void * ptr, double x, double y, double w, double h) {
 	ASSERT_MAIN;
 	NSRect r = NSMakeRect((CGFloat)x, (CGFloat)y, (CGFloat)w,
 		(CGFloat)h);
-	[(NSWindow *)ptr setFrame:r display:YES];
+	[(SimpleWindow *)ptr setFlippedContentRect:r];
 }
 
 void SetWindowTitle(void * w, char * title) {

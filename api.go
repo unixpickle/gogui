@@ -11,11 +11,9 @@ type AppInfo struct {
 // A Canvas is a widget that can be drawn into.
 type Canvas interface {
 	Widget
-	DrawContext
 	
-	// Flush draws everything from the current context to the screen
-	// asynchronously.
-	Flush()
+	DrawHandler() DrawHandler
+	SetDrawHandler(d DrawHandler)
 }
 
 // A DrawContext receives draw commands.
@@ -30,36 +28,42 @@ type DrawContext interface {
 	// FillEllipse fills an ellipse inside a rectangle.
 	FillEllipse(r Rect)
 
-	// FillPath fills the current path as a polygon.
+	// FillPath fills the current path.
+	// If the path was not closed, the behaviour of FillPath may vary on
+	// different platforms.
 	FillPath()
 
-	// FillRect draws a rectangle.
+	// FillRect fills a rectangle.
 	FillRect(r Rect)
 
-	// LineTo adds a line from the current point to another point in the path.
+	// LineTo adds a line from the current point in the path to another point.
 	LineTo(x, y float64)
 
-	// MoveTo moves the current path to a point.
+	// MoveTo moves the current path to a point without connecting said point to
+	// the rest of the path.
 	MoveTo(x, y float64)
 
-	// SetFill sets the color used by the fill functions.
+	// SetFill sets the color for every Fill method.
 	SetFill(r, g, b, a float64)
 
-	// SetStroke sets the color used by the stroke functions.
+	// SetStroke sets the color for every Stroke method.
 	SetStroke(r, g, b, a float64)
 	
-	// SetThickness sets the thickness of the stroke.
+	// SetThickness sets the thickness for every Stroke method.
 	SetThickness(thickness float64)
 
 	// StrokeEllipse strokes an ellipse inside a rectangle.
 	StrokeEllipse(r Rect)
 
-	// Stroke path outlines the current path.
+	// StrokePath outlines the current path.
 	StrokePath()
 
 	// StrokeRect outlines a rectangle.
 	StrokeRect(r Rect)
 }
+
+// A DrawHandler is called to draw into a canvas's drawing context.
+type DrawHandler func(DrawContext)
 
 // A KeyEvent holds information for a key event.
 type KeyEvent struct {
@@ -75,6 +79,16 @@ type KeyEvent struct {
 	ShiftKey bool
 }
 
+// A KeyEventer listens to key events and sends them to handlers.
+type KeyEventer interface {
+	KeyDownHandler() KeyHandler
+	KeyPressHandler() KeyHandler
+	KeyUpHandler() KeyHandler
+	SetKeyDownHandler(k KeyHandler)
+	SetKeyPressHandler(k KeyHandler)
+	SetKeyUpHandler(k KeyHandler)
+}
+
 // A KeyHandler handles keyboard events.
 type KeyHandler func(KeyEvent)
 
@@ -82,6 +96,18 @@ type KeyHandler func(KeyEvent)
 type MouseEvent struct {
 	X float64
 	Y float64
+}
+
+// A MouseEventer listens to mouse events and sends them to handlers.
+type MouseEventer interface {
+	MouseDownHandler() MouseHandler
+	MouseDragHandler() MouseHandler
+	MouseMoveHandler() MouseHandler
+	MouseUpHandler() MouseHandler
+	SetMouseDownHandler(m MouseHandler)
+	SetMouseDragHandler(m MouseHandler)
+	SetMouseMoveHandler(m MouseHandler)
+	SetMouseUpHandler(m MouseHandler)
 }
 
 // A MouseHandler handles mouse events.
@@ -117,6 +143,9 @@ type Widget interface {
 
 // A Window is container Widget which shows the user its sub-widgets.
 type Window interface {
+	KeyEventer
+	MouseEventer
+	
 	// Add adds a widget to the window. The widget cannot already be added to
 	// something else.
 	Add(w Widget)
@@ -138,27 +167,6 @@ type Window interface {
 
 	// Hide closes the window if it was open.
 	Hide()
-	
-	// KeyDownHandler returns the window's key-down handler.
-	KeyDownHandler() KeyHandler
-	
-	// KeyPressHandler returns the window's key-press handler.
-	KeyPressHandler() KeyHandler
-	
-	// KeyUpHandler returns the window's key-Up handler.
-	KeyUpHandler() KeyHandler
-
-	// MouseDownHandler returns the window's mouse-down handler.
-	MouseDownHandler() MouseHandler
-	
-	// MouseDragHandler returns the window's mouse-drag handler.
-	MouseDragHandler() MouseHandler
-	
-	// MouseMoveHandler returns the window's mouse-move handler.
-	MouseMoveHandler() MouseHandler
-	
-	// MouseUpHandler returns the window's mouse-up handler.
-	MouseUpHandler() MouseHandler
 
 	// Parent returns nil; it exists to implement the Widget interface.
 	Parent() Widget
@@ -172,27 +180,6 @@ type Window interface {
 
 	// SetFrame sets the content rectangle for the window.
 	SetFrame(r Rect)
-	
-	// SetKeyDownHandler sets the window's key-down handler.
-	SetKeyDownHandler(k KeyHandler)
-	
-	// SetKeyPressHandler sets the window's key-press handler.
-	SetKeyPressHandler(k KeyHandler)
-	
-	// SetKeyUpHandler sets the window's key-up handler.
-	SetKeyUpHandler(k KeyHandler)
-	
-	// SetMouseDownHandler sets the window's mouse-down handler.
-	SetMouseDownHandler(m MouseHandler)
-	
-	// SetMouseDragHandler sets the window's mouse-drag handler.
-	SetMouseDragHandler(m MouseHandler)
-	
-	// SetMouseMoveHandler sets the window's mouse-move handler.
-	SetMouseMoveHandler(m MouseHandler)
-	
-	// SetMouseUpHandler sets the window's mouse-up handler.
-	SetMouseUpHandler(m MouseHandler)
 	
 	// SetTitle sets the title of the window.
 	SetTitle(t string)

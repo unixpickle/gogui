@@ -12,8 +12,8 @@ So far, gogui supports window creation and canvas drawing. Here is an example of
 
 Major TODOs:
 
+ * Change model to be based on the event loop.
  * Map keyboard events to match JavaScript keycodes.
- * Change the way arguments are passed to the canvas
 
 The following canvas features should be added:
 

@@ -18,7 +18,7 @@ func canvasDrawRect(windowPtr, canvas, ctx unsafe.Pointer) {
 					// Found the canvas; call the draw handler.
 					canvas := child.(Canvas)
 					if h := canvas.DrawHandler(); h != nil {
-						c := &drawContext{ctx}
+						c := newDrawContext(ctx)
 						h(c)
 						c.pointer = nil
 					}

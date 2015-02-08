@@ -49,7 +49,6 @@ So far, gogui supports keyboard and mouse events, window management, and canvas 
  * Map keyboard events to match JavaScript keycodes.
  * Add canvas features
    * Arcs
-   * Text
    * Images
    * Line cap
    * Line join

@@ -47,7 +47,7 @@ func openWindow() {
 }
 
 func drawCircle(c gogui.DrawContext, evt gogui.MouseEvent) {
-	c.SetFill(0, 0, 0, 1)
+	c.SetFill(gogui.Color{0, 0, 0, 1})
 	c.FillEllipse(gogui.Rect{evt.X - 5, evt.Y - 5, 10, 10})
 }
 
@@ -59,7 +59,7 @@ func drawLines(c gogui.DrawContext, evts []gogui.MouseEvent) {
 		return
 	}
 	
-	c.SetStroke(1, 0, 0, 1)
+	c.SetStroke(gogui.Color{1, 0, 0, 1})
 	c.SetThickness(8)
 	c.BeginPath()
 	c.MoveTo(evts[0].X, evts[0].Y)
@@ -67,9 +67,4 @@ func drawLines(c gogui.DrawContext, evts []gogui.MouseEvent) {
 		c.LineTo(evts[i].X, evts[i].Y)
 	}
 	c.StrokePath()
-	
-	// Fill the last point
-	evt := evts[len(evts) - 1]
-	c.SetFill(0.82, 0.29, 0.29, 1)
-	c.FillEllipse(gogui.Rect{evt.X - 5, evt.Y - 5, 10, 10})
 }

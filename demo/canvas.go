@@ -27,12 +27,14 @@ func openWindow() {
 	
 	// Set the draw routine.
 	c.SetDrawHandler(func(ctx gogui.DrawContext) {
+		ctx.FillText("Check it out!", 20, 100)
+		
 		// Fill red rectangle
-		ctx.SetFill(1, 0, 0, 1)
+		ctx.SetFill(gogui.Color{1, 0, 0, 1})
 		ctx.FillRect(gogui.Rect{10, 10, 50, 50})
 	
 		// Draw a triangle
-		ctx.SetStroke(0, 0, 0, 1)
+		ctx.SetStroke(gogui.Color{0, 0, 0, 1})
 		ctx.SetThickness(3)
 		ctx.BeginPath()
 		ctx.MoveTo(170, 200)
@@ -43,7 +45,7 @@ func openWindow() {
 	
 		// Draw a regular polygon
 		vertices := 5
-		ctx.SetFill(0, 0, 1, 1)
+		ctx.SetFill(gogui.Color{0, 0, 1, 1})
 		ctx.SetThickness(10)
 		ctx.BeginPath()
 		for i := 0; i < vertices; i++ {
@@ -61,7 +63,7 @@ func openWindow() {
 	
 		// Draw a circle
 		vertices = 100
-		ctx.SetFill(0, 0.8, 0.8, 1)
+		ctx.SetFill(gogui.Color{0, 0.8, 0.8, 1})
 		ctx.FillEllipse(gogui.Rect{240, 30, 80, 80})
 	})
 	c.NeedsUpdate()

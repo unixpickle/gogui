@@ -95,6 +95,26 @@ void ContextStrokeRect(void * c, double x, double y, double w, double h) {
 		(CGFloat)w, (CGFloat)h));
 }
 
+void ContextText(char * text, double x, double y, double fontSize,
+	char * fontName, double r, double g, double b, double a) {
+	// Generate the font
+	NSString * name = [NSString stringWithUTF8String:fontName];
+	free((void *)fontName);
+	NSFont * font = [NSFont fontWithName:name size:(CGFloat)fontSize];
+	
+	// Generate the color
+	NSColor * color = [NSColor colorWithRed:(CGFloat)r green:(CGFloat)g
+		blue:(CGFloat)b alpha:(CGFloat)a];
+	
+	// Generate the attributes and draw the string
+	NSDictionary * dict = @{NSFontAttributeName: font,
+		NSForegroundColorAttributeName: color};
+	NSString * string = [NSString stringWithUTF8String:text];
+	free((void *)text);
+	[string drawAtPoint:NSMakePoint((CGFloat)x, (CGFloat)y)
+		withAttributes:dict];
+}
+
 void * CreateCanvas(double x, double y, double w, double h) {
 	ASSERT_MAIN;
 	NSRect r = NSMakeRect((CGFloat)x, (CGFloat)y, (CGFloat)w,
@@ -200,6 +220,13 @@ func finalizeCanvas(c *canvas) {
 
 type drawContext struct {
 	pointer unsafe.Pointer
+	fontSize  float64
+	fontName  string
+	fillColor Color
+}
+
+func newDrawContext(p unsafe.Pointer) *drawContext {
+	return &drawContext{p, 18, "Helvetica", Color{0, 0, 0, 1}}
 }
 
 func (d *drawContext) BeginPath() {
@@ -224,6 +251,13 @@ func (d *drawContext) FillRect(r Rect) {
 		C.double(r.Width), C.double(r.Height))
 }
 
+func (d *drawContext) FillText(text string, x, y float64) {
+	c := d.fillColor
+	C.ContextText(C.CString(text), C.double(x), C.double(y),
+		C.double(d.fontSize), C.CString(d.fontName), C.double(c.R),
+		C.double(c.G), C.double(c.B), C.double(c.A))
+}
+
 func (d *drawContext) LineTo(x, y float64) {
 	C.ContextLineTo(d.pointer, C.double(x), C.double(y))
 }
@@ -232,14 +266,20 @@ func (d *drawContext) MoveTo(x, y float64) {
 	C.ContextMoveTo(d.pointer, C.double(x), C.double(y))
 }
 
-func (d *drawContext) SetFill(r, g, b, a float64) {
-	C.ContextSetFill(d.pointer, C.double(r), C.double(g), C.double(b),
-		C.double(a))
+func (d *drawContext) SetFill(c Color) {
+	C.ContextSetFill(d.pointer, C.double(c.R), C.double(c.G), C.double(c.B),
+		C.double(c.A))
+	d.fillColor = c
 }
 
-func (d *drawContext) SetStroke(r, g, b, a float64) {
-	C.ContextSetStroke(d.pointer, C.double(r), C.double(g), C.double(b),
-		C.double(a))
+func (d *drawContext) SetFont(size float64, name string) {
+	d.fontSize = size
+	d.fontName = name
+}
+
+func (d *drawContext) SetStroke(c Color) {
+	C.ContextSetStroke(d.pointer, C.double(c.R), C.double(c.G), C.double(c.B),
+		C.double(c.A))
 }
 
 func (d *drawContext) SetThickness(thickness float64) {

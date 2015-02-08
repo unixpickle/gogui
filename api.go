@@ -17,6 +17,14 @@ type Canvas interface {
 	SetDrawHandler(d DrawHandler)
 }
 
+// A Color stores an RGBA color.
+type Color struct {
+	R float64
+	G float64
+	B float64
+	A float64
+}
+
 // A DrawContext receives draw commands.
 type DrawContext interface {
 	// BeginPath starts a path which can be filled or stroked.
@@ -36,6 +44,9 @@ type DrawContext interface {
 
 	// FillRect fills a rectangle.
 	FillRect(r Rect)
+	
+	// FillText draws text at a given point.
+	FillText(text string, x, y float64)
 
 	// LineTo adds a line from the current point in the path to another point.
 	LineTo(x, y float64)
@@ -45,10 +56,13 @@ type DrawContext interface {
 	MoveTo(x, y float64)
 
 	// SetFill sets the color for every Fill method.
-	SetFill(r, g, b, a float64)
+	SetFill(c Color)
+	
+	// SetFont sets the font and font size used by FillText
+	SetFont(size float64, name string)
 
 	// SetStroke sets the color for every Stroke method.
-	SetStroke(r, g, b, a float64)
+	SetStroke(c Color)
 
 	// SetThickness sets the thickness for every Stroke method.
 	SetThickness(thickness float64)

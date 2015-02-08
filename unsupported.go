@@ -11,8 +11,7 @@ var unsupportedError = errors.New("OS not supported.")
 // Main runs the main loop of the app. This should be called from the main
 // function, since it may require execution on the main OS thread.
 func Main(info *AppInfo) {
-	select {
-	}
+	select {}
 }
 
 // NewCanvas creates a new canvas or fails with an error.

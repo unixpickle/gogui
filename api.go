@@ -11,7 +11,7 @@ type AppInfo struct {
 // A Canvas is a widget that can be drawn into.
 type Canvas interface {
 	Widget
-	
+
 	DrawHandler() DrawHandler
 	SetDrawHandler(d DrawHandler)
 }
@@ -48,7 +48,7 @@ type DrawContext interface {
 
 	// SetStroke sets the color for every Stroke method.
 	SetStroke(r, g, b, a float64)
-	
+
 	// SetThickness sets the thickness for every Stroke method.
 	SetThickness(thickness float64)
 
@@ -69,10 +69,10 @@ type DrawHandler func(DrawContext)
 type KeyEvent struct {
 	// CharCode stores a char code similar to the char codes in JavaScript.
 	CharCode int
-	
+
 	// KeyCode stores the OS-specific key code (if available).
-	KeyCode  int
-	
+	KeyCode int
+
 	AltKey   bool
 	CtrlKey  bool
 	MetaKey  bool
@@ -145,7 +145,7 @@ type Widget interface {
 type Window interface {
 	KeyEventer
 	MouseEventer
-	
+
 	// Add adds a widget to the window. The widget cannot already be added to
 	// something else.
 	Add(w Widget)
@@ -155,7 +155,7 @@ type Window interface {
 
 	// Children returns every direct child of this window.
 	Children() []Widget
-	
+
 	// CloseHandler returns the window's close handler.
 	CloseHandler() func()
 
@@ -180,13 +180,13 @@ type Window interface {
 
 	// SetFrame sets the content rectangle for the window.
 	SetFrame(r Rect)
-	
+
 	// SetTitle sets the title of the window.
 	SetTitle(t string)
 
 	// Show opens the window if it was not open before.
 	Show()
-	
+
 	// Showing returns whether the window is showing or not.
 	Showing() bool
 }

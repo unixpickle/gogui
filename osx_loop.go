@@ -17,6 +17,7 @@ package gogui
 @implementation AppDelegate
 
 @synthesize appName;
+
 - (void)applicationDidFinishLaunching:(NSNotification *)note {
 	// TODO: figure out why the menu title is not bold like normal apps.
 	NSMenu * menu = [[[NSApp mainMenu] itemAtIndex:0] submenu];
@@ -24,6 +25,8 @@ package gogui
 }
 
 @end
+
+extern void runNextEvent();
 
 void MainLoop(const char * name) {
 	NSString * appName = [NSString stringWithUTF8String:name];
@@ -56,13 +59,13 @@ void MainLoop(const char * name) {
 	[quitMenuItem release];
 	[pool release];
 }
-void RunMain(void (^ block)(void)) {
-	if ([NSThread isMainThread]) {
-		block();
-	} else {
-		dispatch_sync(dispatch_get_main_queue(), block);
-	}
+
+void DispatchMainEvent() {
+	dispatch_async(dispatch_get_main_queue(), ^{
+		runNextEvent();
+	});
 }
+
 */
 import "C"
 
@@ -78,4 +81,11 @@ func init() {
 // Main runs the Cocoa runloop. You must call this from main.main.
 func Main(info *AppInfo) {
 	C.MainLoop(C.CString(info.Name))
+}
+
+// RunOnMain runs a function on the main goroutine asynchronously using the
+// dispatch_async() API.
+func RunOnMain(f func()) {
+	pushEvent(f)
+	C.DispatchMainEvent()
 }

@@ -28,8 +28,8 @@ func NewWindow(r Rect) (Window, error) {
 	return nil, unsupportedError
 }
 
-// PushEvent runs a function on the main goroutine.
-func PushEvent(evt func()) {
+// RunOnMain runs a function on the main goroutine asynchronously.
+func RunOnMain(evt func()) {
 	panic("OS not supported.")
 }
 

@@ -115,6 +115,25 @@ void ContextText(char * text, double x, double y, double fontSize,
 		withAttributes:dict];
 }
 
+void ContextTextSize(char * text, char * fontName, double size, double * w,
+	double * h) {
+	// Generate the font
+	NSString * name = [NSString stringWithUTF8String:fontName];
+	free((void *)fontName);
+	NSFont * font = [NSFont fontWithName:name size:(CGFloat)size];
+	
+	// Generate the attributes and draw the string
+	NSDictionary * dict = @{NSFontAttributeName: font};
+	NSString * string = [NSString stringWithUTF8String:text];
+	free((void *)text);
+
+	// Compute the bounds of the text.
+	NSSize hugeSize = NSMakeSize(CGFLOAT_MAX, CGFLOAT_MAX);
+	NSSize theSize = [string sizeWithAttributes:dict];
+	*w = (double)theSize.width;
+	*h = (double)theSize.height;
+}
+
 void * CreateCanvas(double x, double y, double w, double h) {
 	ASSERT_MAIN;
 	NSRect r = NSMakeRect((CGFloat)x, (CGFloat)y, (CGFloat)w,
@@ -298,4 +317,12 @@ func (d *drawContext) StrokePath() {
 func (d *drawContext) StrokeRect(r Rect) {
 	C.ContextStrokeRect(d.pointer, C.double(r.X), C.double(r.Y),
 		C.double(r.Width), C.double(r.Height))
+}
+
+func (d *drawContext) TextSize(text string) (float64, float64) {
+	var x, y C.double
+	var cText = C.CString(text)
+	C.ContextTextSize(cText, C.CString(d.fontName), C.double(d.fontSize), &x,
+		&y)
+	return float64(x), float64(y)
 }

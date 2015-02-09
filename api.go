@@ -75,6 +75,10 @@ type DrawContext interface {
 
 	// StrokeRect outlines a rectangle.
 	StrokeRect(r Rect)
+	
+	// TextSize computes the width and height for a given string as it would be
+	// drawn by FillText.
+	TextSize(text string) (width, height float64)
 }
 
 // A DrawHandler is called to draw into a canvas's drawing context.

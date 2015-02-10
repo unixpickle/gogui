@@ -52,7 +52,9 @@ So far, gogui supports keyboard and mouse events, window management, and canvas 
 # TODO
 
  * Map keyboard events to match JavaScript keycodes.
+ * Fix crashes when font does not exist.
  * Add canvas features
+   * Font decoration (i.e. italics, bold, underline)
    * Translation + rotation + save/restore state
    * Arcs
    * Images

@@ -51,6 +51,7 @@ So far, gogui supports keyboard and mouse events, window management, and canvas 
 
 # TODO
 
+ * Do not pass Go pointers into C
  * Map keyboard events to match JavaScript keycodes.
  * Fix crashes when font does not exist.
  * Add canvas features

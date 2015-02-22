@@ -188,14 +188,9 @@ void DestroyWindow(void * ptr) {
 	[w release];
 }
 
-void GetWindowFrame(void * ptr, double * x, double * y, double * w,
-	double * h) {
+NSRect GetWindowFrame(void * ptr) {
 	ASSERT_MAIN;
-	NSRect r = [(SimpleWindow *)ptr flippedContentRect];
-	*x = (double)r.origin.x;
-	*y = (double)r.origin.y;
-	*w = (double)r.size.width;
-	*h = (double)r.size.height;
+	return [(SimpleWindow *)ptr flippedContentRect];
 }
 
 void HideWindow(void * ptr) {
@@ -292,9 +287,9 @@ func (w *window) Focus() {
 }
 
 func (w *window) Frame() Rect {
-	var x, y, width, height C.double
-	C.GetWindowFrame(w.pointer, &x, &y, &width, &height)
-	return Rect{float64(x), float64(y), float64(width), float64(height)}
+	rect := C.GetWindowFrame(w.pointer)
+	return Rect{float64(rect.origin.x), float64(rect.origin.y),
+		float64(rect.size.width), float64(rect.size.height)}
 }
 
 func (w *window) Hide() {

@@ -115,8 +115,7 @@ void ContextText(char * text, double x, double y, double fontSize,
 		withAttributes:dict];
 }
 
-void ContextTextSize(char * text, char * fontName, double size, double * w,
-	double * h) {
+NSSize ContextTextSize(char * text, char * fontName, double size) {
 	// Generate the font
 	NSString * name = [NSString stringWithUTF8String:fontName];
 	free((void *)fontName);
@@ -129,9 +128,7 @@ void ContextTextSize(char * text, char * fontName, double size, double * w,
 
 	// Compute the bounds of the text.
 	NSSize hugeSize = NSMakeSize(CGFLOAT_MAX, CGFLOAT_MAX);
-	NSSize theSize = [string sizeWithAttributes:dict];
-	*w = (double)theSize.width;
-	*h = (double)theSize.height;
+	return [string sizeWithAttributes:dict];
 }
 
 void * CreateCanvas(double x, double y, double w, double h) {
@@ -148,14 +145,9 @@ void DestroyCanvas(void * c) {
 	[v release];
 }
 
-void GetViewFrame(void * v, double * x, double * y, double * w,
-	double * h) {
+NSRect GetViewFrame(void * v) {
 	ASSERT_MAIN;
-	NSRect r = [(NSView *)v frame];
-	*x = (double)r.origin.x;
-	*y = (double)r.origin.y;
-	*w = (double)r.size.width;
-	*h = (double)r.size.height;
+	return [(NSView *)v frame];
 }
 
 void SetViewFrame(void * v, double x, double y, double w, double h) {
@@ -192,9 +184,9 @@ func (c *canvas) DrawHandler() DrawHandler {
 }
 
 func (c *canvas) Frame() Rect {
-	var x, y, w, h C.double
-	C.GetViewFrame(c.pointer, &x, &y, &w, &h)
-	return Rect{float64(x), float64(y), float64(w), float64(h)}
+	rect := C.GetViewFrame(c.pointer)
+	return Rect{float64(rect.origin.x), float64(rect.origin.y),
+		float64(rect.size.width), float64(rect.size.height)}
 }
 
 func (c *canvas) NeedsUpdate() {
@@ -320,9 +312,7 @@ func (d *drawContext) StrokeRect(r Rect) {
 }
 
 func (d *drawContext) TextSize(text string) (float64, float64) {
-	var x, y C.double
 	var cText = C.CString(text)
-	C.ContextTextSize(cText, C.CString(d.fontName), C.double(d.fontSize), &x,
-		&y)
-	return float64(x), float64(y)
+	s := C.ContextTextSize(cText, C.CString(d.fontName), C.double(d.fontSize))
+	return float64(s.width), float64(s.height)
 }
